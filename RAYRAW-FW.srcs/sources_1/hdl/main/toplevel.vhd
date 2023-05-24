@@ -18,41 +18,130 @@ use mylib.defBCT.all;
 
 entity toplevel is
   Port (
+      -- System ---------------------------------------------------------------
+    PROGB_ON            : out std_logic;
+    BASE_CLKP           : in std_logic;
+    BASE_CLKN           : in std_logic;
+    USR_RSTB            : in std_logic;
+    LED                 : out std_logic_vector(4 downto 1);
+    DIP                 : in std_logic_vector(8 downto 1);
+    VP                  : in std_logic;
+    VN                  : in std_logic;
+    
+    -- GTX ------------------------------------------------------------------
+    GTX_REFCLK_P        : in std_logic;        -- not included in .xlsx
+    GTX_REFCLK_N        : in std_logic;        -- not included in .xlsx
+    GTX_TX_P            : out std_logic_vector(0 downto 0);
+    GTX_RX_P            : in std_logic_vector(0 downto 0);
+    GTX_TX_N            : out std_logic_vector(0 downto 0);
+    GTX_RX_N            : in std_logic_vector(0 downto 0);
+    -- SFP_SCL             : inout std_logic;
+    -- SFP_SDA             : inout std_logic;
+    
+    -- SPI flash ------------------------------------------------------------
+    SPI_MOSI            : out std_logic;
+    SPI_DIN             : in std_logic;
+    -- SPI_D2              : in std_logic;
+    -- SPI_D3              : in std_logic;
+    FCSB                : out std_logic;
+    
+    -- EEPROM ---------------------------------------------------------------
+    EEP_CS              : out std_logic;
+    EEP_SK              : out std_logic;
+    EEP_DI              : out std_logic;
+    EEP_DO              : in std_logic;
+    
+    -- NIM-IO ---------------------------------------------------------------
+    NIM_IN              : in std_logic_vector(2 downto 1);
+    NIM_OUT             : out std_logic_vector(2 downto 1);
+    
+    -- JItter cleaner -------------------------------------------------------
+    -- CDCE_PDB            : out std_logic;
+    -- CDCE_LOCK           : in std_logic;
+    -- CDCE_SCLK           : out std_logic;
+    -- CDCE_SO             : in std_logic;
+    -- CDCE_SI             : out std_logic;
+    -- CDCE_SEN            : out std_logic;
+    -- CDCE_REFP           : out std_logic;
+    -- CDCE_CLKP           : in std_logic_vector(1 downto 0);
+    -- CDCE_CLKN           : in std_logic_vector(1 downto 0);
+    
+    -- MIKUMARI -------------------------------------------------------------
+    -- CDCM_RX_P           : in std_logic;
+    -- CDCM_RX_N           : in std_logic;
+    -- CDCM_TX_P           : out std_logic;
+    -- CDCM_TX_N           : out std_logic;
+    
+    -- ASIC -----------------------------------------------------------------
+    -- ASIC_REFC           : out std_logic_vector(3 downto 0);
+    -- ASIC_SSB            : out std_logic_vector(3 downto 0);
+    -- ASIC_SCK            : out std_logic;
+    -- ASIC_MOSI           : out std_logic;
+    
+    
+    ASIC_DISCRI         : in std_logic_vector(31 downto 0)
+    
+    -- TRIGGER_OUT ----------------------------------------------------------
+    -- TRIG_O              : out std_logic_vector(31 downto 0);
+    
+    -- APD_BIAS -------------------------------------------------------------
+    -- CP_CS_B             : out std_logic;
+    -- CP_SCLK             : out std_logic;
+    -- CP_DIN              : out std_logic;
+    -- CP_CL_B             : in std_logic;
+    
+    -- ASIC_ADC -------------------------------------------------------------
+    -- ADC_DATA_P          : in std_logic_vector(31 downto 0);
+    
+    
+    -- ADC_DATA_N          : in std_logic_vector(31 downto 0);
+    
+    
+    -- ADC_DFRAME_P        : in std_logic_vector(3 downto 0);
+    -- ADC_DFRAME_N        : in std_logic_vector(3 downto 0);
+    -- ADC_DCLK_P          : in std_logic_vector(3 downto 0);
+    -- ADC_DCLK_N          : in std_logic_vector(3 downto 0);
+    
+    -- MEZZANINE ------------------------------------------------------------
+    -- MZN_P               : inout std_logic_vector(7 downto 0);
+    -- MZN_N               : inout std_logic_vector(7 downto 0);
+    
+    
     -- System ----------------------------------------------------------------
-    CLKOSC        : in std_logic; -- 50 MHz
-    LED           : out std_logic_vector(kNumLED-1 downto 0);
-    DIP           : in  std_logic_vector(kNumBitDIP-1 downto 0);
-    PROG_B_ON     : out std_logic;
-    VP            : in std_logic; -- XADC
-    VN            : in std_logic; -- XADC
+    -- CLKOSC        : in std_logic; -- 50 MHz
+    -- LED           : out std_logic_vector(kNumLED-1 downto 0);
+    -- DIP           : in  std_logic_vector(kNumBitDIP-1 downto 0);
+    -- PROG_B_ON     : out std_logic;
+    -- VP            : in std_logic; -- XADC
+    -- VN            : in std_logic; -- XADC
 
     -- ASIC IO ---------------------------------------------------------------
-    DISCRI_IN     : in std_logic_vector(kNumInput-1 downto 0); -- 0-31 ch
+    -- DISCRI_IN     : in std_logic_vector(kNumInput-1 downto 0); -- 0-31 ch
 
     -- PHY -------------------------------------------------------------------
-    GTX_REFCLK_P        : in std_logic;
-    GTX_REFCLK_N        : in std_logic;
-    GTX_TX_P            : out std_logic_vector(kNumGtx downto 1);
-    GTX_RX_P            : in  std_logic_vector(kNumGtx downto 1);
-    GTX_TX_N            : out std_logic_vector(kNumGtx downto 1);
-    GTX_RX_N            : in  std_logic_vector(kNumGtx downto 1);
+    -- GTX_REFCLK_P        : in std_logic;
+    -- GTX_REFCLK_N        : in std_logic;
+    -- GTX_TX_P            : out std_logic_vector(kNumGtx downto 1);
+    -- GTX_RX_P            : in  std_logic_vector(kNumGtx downto 1);
+    -- GTX_TX_N            : out std_logic_vector(kNumGtx downto 1);
+    -- GTX_RX_N            : in  std_logic_vector(kNumGtx downto 1);
 
     -- EEPROM ----------------------------------------------------------------
-    PROM_CS	      : out std_logic;
-    PROM_SK       : out std_logic;
-    PROM_DI       : out std_logic;
-    PROM_DO       : in std_logic;
+    -- PROM_CS	      : out std_logic;
+    -- PROM_SK       : out std_logic;
+    -- PROM_DI       : out std_logic;
+    -- PROM_DO       : in std_logic;
 
     -- SPI flash memory ------------------------------------------------------
-    FCS_B         : out std_logic;
+    -- FCS_B         : out std_logic;
 --    USR_CLK       : out std_logic;
-    MOSI          : out std_logic;
-    DIN           : in  std_logic;
+    -- MOSI          : out std_logic;
+    -- DIN           : in  std_logic;
 
     -- User I/O --------------------------------------------------------------
-    USER_RST_B    : in std_logic;
-    NIMIN         : in  std_logic_vector(kNumNIM downto 1);
-    NIMOUT        : out std_logic_vector(kNumNIM downto 1)
+    -- USER_RST_B    : in std_logic;
+    -- NIMIN         : in  std_logic_vector(kNumNIM downto 1);
+    -- NIMOUT        : out std_logic_vector(kNumNIM downto 1)
 
     );
 end toplevel;
@@ -73,21 +162,21 @@ architecture Behavioral of toplevel is
 
   -- DIP ---------------------------------------------------------------------
   signal dip_sw       : std_logic_vector(DIP'range);
-  subtype DipID is integer range 0 to 7;
+  subtype DipID is integer range 1 to 8;
   type regLeaf is record
     Index : DipID;
   end record;
-  constant kSiTCP     : regLeaf := (Index => 0);
-  constant kNC1       : regLeaf := (Index => 1);
-  constant kNC2       : regLeaf := (Index => 2);
-  constant kNC3       : regLeaf := (Index => 3);
-  constant kNC4       : regLeaf := (Index => 4);
-  constant kNC5       : regLeaf := (Index => 5);
-  constant kNC6       : regLeaf := (Index => 6);
-  constant kNC7       : regLeaf := (Index => 7);
+  constant kSiTCP     : regLeaf := (Index => 1);
+  constant kNC1       : regLeaf := (Index => 2);
+  constant kNC2       : regLeaf := (Index => 3);
+  constant kNC3       : regLeaf := (Index => 4);
+  constant kNC4       : regLeaf := (Index => 5);
+  constant kNC5       : regLeaf := (Index => 6);
+  constant kNC6       : regLeaf := (Index => 7);
+  constant kNC7       : regLeaf := (Index => 8);
 
   -- ASIC IO -----------------------------------------------------------------
-  signal asic_discri            :  std_logic_vector(DISCRI_IN'range);
+  signal asic_discri_input        :  std_logic_vector(ASIC_DISCRI'range);
 
   -- TRM ---------------------------------------------------------------------
   signal seq_busy, module_busy    : std_logic;
@@ -303,7 +392,8 @@ architecture Behavioral of toplevel is
       -- Status and control signals
       reset             : in     std_logic;
       locked            : out    std_logic;
-      clk_in1           : in     std_logic
+      clk_in1_p         : in     std_logic;
+      clk_in1_n         : in     std_logic
      );
   end component;
 
@@ -334,29 +424,29 @@ begin
   -- Global ------------------------------------------------------------------
   u_DelayUsrRstb : entity mylib.DelayGen
     generic map(kNumDelay => 128)
-    port map(clk_sys, USER_RST_B, delayed_usr_rstb);
+    port map(clk_link, USR_RSTB, delayed_usr_rstb);
 
   mmcm_cdcm_reset <= (not delayed_usr_rstb);
 
   clk_locked    <= clk_locked_sys and clk_locked_cdcm;
-  system_reset  <= (NOT clk_locked) or (not USER_RST_B);
+  system_reset  <= (NOT clk_locked) or (not USR_RSTB);
   user_reset    <= system_reset or rst_from_bus or emergency_reset;
   bct_reset     <= system_reset or emergency_reset;
 
   --dip_sw(0)   <= NOT DIP(0);
-  dip_sw(1)   <= NOT DIP(1);
-  dip_sw(2)   <= NOT DIP(2);
-  dip_sw(3)   <= NOT DIP(3);
-  dip_sw(4)   <= NOT DIP(4);
-  dip_sw(5)   <= NOT DIP(5);
-  dip_sw(6)   <= NOT DIP(6);
-  dip_sw(7)   <= NOT DIP(7);
+  dip_sw(1)   <= DIP(1);
+  dip_sw(2)   <= DIP(2);
+  dip_sw(3)   <= DIP(3);
+  dip_sw(4)   <= DIP(4);
+  dip_sw(5)   <= DIP(5);
+  dip_sw(6)   <= DIP(6);
+  dip_sw(7)   <= DIP(7);
 
   -- Fixed input ports -------------------------------------------------------
-  asic_discri  <= DISCRI_IN;
+  asic_discri_input  <= ASIC_DISCRI;
 
   -- TRM -------------------------------------------------------------------------------
-  LED <= "00" & module_busy &  tcp_isActive;
+  LED <= clk_locked_sys & clk_locked_cdcm & module_busy &  tcp_isActive;
 
   seq_busy   <= tdc_busy;-- OR dip_sw(kFBUSY.Index);
 
@@ -424,7 +514,7 @@ begin
       );
 
   -- TDC -------------------------------------------------------------------------------
-  sig_in_tdc(0)   <= DISCRI_IN;
+  sig_in_tdc(0)   <= ASIC_DISCRI;
 
   data_bbus(kBbTDCL0.ID) <= data_tdc_bbus(0);
   data_bbus(kBbTDCT0.ID) <= data_tdc_bbus(1);
@@ -468,14 +558,14 @@ begin
       clk                 => clk_sys,
 
       -- NIM input signal --
-      NimIn               => NIMIN,
+      NimIn               => NIM_IN,
       ExtL1               => ext_L1,
       ExtL2               => ext_L2,
       ExtClr              => ext_clr,
       ExtBusy             => ext_busy,
 
       -- NIM output signal --
-      NimOut              => NIMOUT,
+      NimOut              => NIM_OUT,
       ModuleBusy          => module_busy,
       DaqGate             => daq_gate,
       clk1MHz             => clk_1MHz,
@@ -555,10 +645,10 @@ begin
       clkSpi            => clk_spi,
 
       -- Module output --
-      CS_SPI            => FCS_B,
+      CS_SPI            => FCSB,
 --      SCLK_SPI          => USR_CLK,
-      MOSI_SPI          => MOSI,
-      MISO_SPI          => DIN,
+      MOSI_SPI          => SPI_MOSI,
+      MISO_SPI          => SPI_DIN,
 
       -- Local bus --
       addrLocalBus      => addr_LocalBus,
@@ -575,7 +665,7 @@ begin
     port map(
       rstSys                    => bct_reset,
       rstFromBus                => rst_from_bus,
-      reConfig                  => PROG_B_ON,
+      reConfig                  => PROGB_ON,
       clk                       => clk_sys,
       -- Local Bus --
       addrLocalBus              => addr_LocalBus,
@@ -614,7 +704,7 @@ begin
 
 
   -- SiTCP Inst ------------------------------------------------------------------------
-  sitcp_reset     <= system_reset OR (NOT USER_RST_B);
+  sitcp_reset     <= system_reset OR (NOT USR_RSTB);
 
   gen_SiTCP : for i in 0 to kNumGtx-1 generate
 
@@ -626,16 +716,17 @@ begin
         CLK               => clk_link, --: System Clock >129MHz
         RST               => sitcp_reset, --: System reset
         -- Configuration parameters
-        FORCE_DEFAULTn    => dip_sw(kSiTCP.Index), --: Load default parameters
+        --FORCE_DEFAULTn    => dip_sw(kSiTCP.Index), --: Load default parameters
+        FORCE_DEFAULTn    => '0', --: Load default parameters
         EXT_IP_ADDR       => X"00000000", --: IP address[31:0]
         EXT_TCP_PORT      => X"0000", --: TCP port #[15:0]
         EXT_RBCP_PORT     => X"0000", --: RBCP port #[15:0]
         PHY_ADDR          => "00000", --: PHY-device MIF address[4:0]
         -- EEPROM
-        EEPROM_CS         => PROM_CS, --: Chip select
-        EEPROM_SK         => PROM_SK, --: Serial data clock
-        EEPROM_DI         => PROM_DI, --: Serial write data
-        EEPROM_DO         => PROM_DO, --: Serial read data
+        EEPROM_CS         => EEP_CS, --: Chip select
+        EEPROM_SK         => EEP_SK, --: Serial data clock
+        EEPROM_DI         => EEP_DI, --: Serial write data
+        EEPROM_DO         => EEP_DO, --: Serial read data
         --    user data, intialial values are stored in the EEPROM, 0xFFFF_FC3C-3F
         USR_REG_X3C       => open, --: Stored at 0xFFFF_FF3C
         USR_REG_X3D       => open, --: Stored at 0xFFFF_FF3D
@@ -803,10 +894,10 @@ begin
 
         -- Tranceiver Interface
         -----------------------
-        txp                  => GTX_TX_P(i+1),
-        txn                  => GTX_TX_N(i+1),
-        rxp                  => GTX_RX_P(i+1),
-        rxn                  => GTX_RX_N(i+1),
+        txp                  => GTX_TX_P(i),
+        txn                  => GTX_TX_N(i),
+        rxp                  => GTX_RX_P(i),
+        rxn                  => GTX_RX_N(i),
 
         -- GMII Interface (client MAC <=> PCS)
         --------------------------------------
@@ -849,7 +940,8 @@ begin
       -- Status and control signals
       reset             => '0',
       locked            => clk_locked_sys,
-      clk_in1           => CLKOSC
+      clk_in1_p         => BASE_CLKP,
+      clk_in1_n         => BASE_CLKN
      );
 
   u_ClkCdcm_Inst : clk_wiz_cdcm

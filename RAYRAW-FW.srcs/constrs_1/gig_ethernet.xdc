@@ -1,3 +1,51 @@
+set_false_path -to [get_pins [list {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_ASYNC_RESET/reset_sync1/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_ASYNC_RESET/reset_sync2/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_ASYNC_RESET/reset_sync3/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_ASYNC_RESET/reset_sync4/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_ASYNC_RESET/reset_sync5/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_ASYNC_RESET/reset_sync6/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_ASYNC_RESET_RECCLK/reset_sync1/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_ASYNC_RESET_RECCLK/reset_sync2/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_ASYNC_RESET_RECCLK/reset_sync3/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_ASYNC_RESET_RECCLK/reset_sync4/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_ASYNC_RESET_RECCLK/reset_sync5/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_ASYNC_RESET_RECCLK/reset_sync6/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_SOFT_RESET_RECCLK/reset_sync1/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_SOFT_RESET_RECCLK/reset_sync2/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_SOFT_RESET_RECCLK/reset_sync3/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_SOFT_RESET_RECCLK/reset_sync4/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_SOFT_RESET_RECCLK/reset_sync5/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/gig_ethernet_pcs_pma_core/gpcs_pma_inst/MGT_RESET.SYNC_SOFT_RESET_RECCLK/reset_sync6/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_encommaalign/reset_sync1/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_encommaalign/reset_sync2/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_encommaalign/reset_sync3/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_encommaalign/reset_sync4/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_encommaalign/reset_sync5/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_encommaalign/reset_sync6/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_rxreset/reset_sync1/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_rxreset/reset_sync2/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_rxreset/reset_sync3/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_rxreset/reset_sync4/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_rxreset/reset_sync5/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_rxreset/reset_sync6/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_txreset/reset_sync1/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_txreset/reset_sync2/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_txreset/reset_sync3/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_txreset/reset_sync4/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_txreset/reset_sync5/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/pcs_pma_i/U0/transceiver_inst/reclock_txreset/reset_sync6/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/tx_elastic_buffer_inst/gen_rd_reset/reset_sync1/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/tx_elastic_buffer_inst/gen_rd_reset/reset_sync2/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/tx_elastic_buffer_inst/gen_rd_reset/reset_sync3/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/tx_elastic_buffer_inst/gen_rd_reset/reset_sync4/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/tx_elastic_buffer_inst/gen_rd_reset/reset_sync5/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/tx_elastic_buffer_inst/gen_rd_reset/reset_sync6/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/tx_elastic_buffer_inst/gen_wr_reset/reset_sync1/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/tx_elastic_buffer_inst/gen_wr_reset/reset_sync2/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/tx_elastic_buffer_inst/gen_wr_reset/reset_sync3/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/tx_elastic_buffer_inst/gen_wr_reset/reset_sync4/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/tx_elastic_buffer_inst/gen_wr_reset/reset_sync5/PRE} \
+          {gen_pcspma[0].u_pcspma_Inst/tx_elastic_buffer_inst/gen_wr_reset/reset_sync6/PRE}]]
 
 
 #***********************************************************
@@ -13,10 +61,10 @@
 
 #set_property LOC GTXE2_CHANNEL_X0Y7 [get_cells */*/*/transceiver_inst/gtwizard_inst/*/gtwizard_i/gt0_GTWIZARD_i/gtxe2_i]
 
-set_property PACKAGE_PIN G3 [get_ports {GTX_RX_N[1]}]
-set_property PACKAGE_PIN G4 [get_ports {GTX_RX_P[1]}]
-set_property PACKAGE_PIN F1 [get_ports {GTX_TX_N[1]}]
-set_property PACKAGE_PIN F2 [get_ports {GTX_TX_P[1]}]
+set_property PACKAGE_PIN G3 [get_ports {GTX_RX_N[0]}]
+set_property PACKAGE_PIN G4 [get_ports {GTX_RX_P[0]}]
+set_property PACKAGE_PIN F1 [get_ports {GTX_TX_N[0]}]
+set_property PACKAGE_PIN F2 [get_ports {GTX_TX_P[0]}]
 
 #set_property PACKAGE_PIN E3 [get_ports {GTX_RX_N[2]}]
 #set_property PACKAGE_PIN E4 [get_ports {GTX_RX_P[2]}]
@@ -171,6 +219,7 @@ set_false_path -to [get_pins -of [get_cells -hierarchical -filter {NAME =~ *rese
 
 set_false_path -to [get_pins -of [get_cells -hierarchical -filter {NAME =~ */core_resets_i/pma_reset_pipe_reg*}] -filter {REF_PIN_NAME =~ PRE}]
 set_false_path -to [get_pins -of [get_cells -hierarchical -filter {NAME =~ */core_resets_i/pma_reset_pipe*[0]}] -filter {REF_PIN_NAME =~ D}]
+
 
 
 
