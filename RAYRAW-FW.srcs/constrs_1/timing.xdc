@@ -23,10 +23,10 @@ set_false_path -through [get_nets {gen_SiTCP[*].u_SiTCP_Inst/SiTCP/GMII/GMII_TXB
 
 #set_false_path -from [get_nets u_MTX1/reg_fbh*] -to [get_nets u_MTX1/gen_tof[*].gen_ch[*].u_Matrix_Impl/in_fbh]
 
-set_false_path -through [get_ports {LED[0]}]
 set_false_path -through [get_ports {LED[1]}]
 set_false_path -through [get_ports {LED[2]}]
 set_false_path -through [get_ports {LED[3]}]
+set_false_path -through [get_ports {LED[4]}]
 
 #set_false_path -through [get_nets ext_L1]
 #set_false_path -through [get_nets ext_busy]
@@ -37,8 +37,8 @@ set_false_path -through [get_nets user_reset]
 set_false_path -through [get_nets bct_reset]
 set_false_path -through [get_nets emergency_reset]
 #set_false_path -through [get_nets {DIP[*]}]
-set_false_path -through [get_nets {NIMOUT[*]}]
-set_false_path -through [get_nets {NIMIN[*]}]
+set_false_path -through [get_nets {NIM_OUT[*]}]
+set_false_path -through [get_nets {NIM_IN[*]}]
 set_false_path -through [get_nets u_TRM_Inst/reg_sel_trig*]
 set_false_path -through [get_nets u_TRM_Inst/self_busy]
 set_false_path -through [get_nets u_TRM_Inst/fifo_busy]
@@ -51,6 +51,7 @@ set_false_path -through [get_nets u_BCT_Inst/rst_from_bus*]
 #set_false_path -through [get_nets {u_IOM_Inst/reg_extL1[*]}]
 #set_false_path -through [get_nets {u_IOM_Inst/reg_ext_busy[*]}]
 #set_false_path -through [get_nets {u_IOM_Inst/reg_ext_rsv2[*]}]
+set_false_path -from [get_pins {u_IOM_Inst/reg_extL1_reg[*]/C}] -to [get_pins u_TDC_Inst/u_CStop/u_FirstFDC/FDCE_inst2/D]
 
 ## constraints for clk_wis_0
 
