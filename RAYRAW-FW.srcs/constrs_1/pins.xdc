@@ -72,12 +72,12 @@ set_property PACKAGE_PIN E15 [get_ports {NIM_OUT[2]}]
 #set_property PACKAGE_PIN Y21 [get_ports ASIC_REFC[1]]
 #set_property PACKAGE_PIN R26 [get_ports ASIC_REFC[2]]
 #set_property PACKAGE_PIN K25 [get_ports ASIC_REFC[3]]
-#set_property PACKAGE_PIN AE21 [get_ports ASIC_SSB[0]]
-#set_property PACKAGE_PIN AF25 [get_ports ASIC_SSB[1]]
-#set_property PACKAGE_PIN Y25 [get_ports ASIC_SSB[2]]
-#set_property PACKAGE_PIN R23 [get_ports ASIC_SSB[3]]
-#set_property PACKAGE_PIN L25 [get_ports ASIC_SCK]
-#set_property PACKAGE_PIN K26 [get_ports ASIC_MOSI]
+set_property PACKAGE_PIN AE21 [get_ports ASIC_SSB[0]]
+set_property PACKAGE_PIN AF25 [get_ports ASIC_SSB[1]]
+set_property PACKAGE_PIN Y25 [get_ports ASIC_SSB[2]]
+set_property PACKAGE_PIN R23 [get_ports ASIC_SSB[3]]
+set_property PACKAGE_PIN L25 [get_ports ASIC_SCK]
+set_property PACKAGE_PIN K26 [get_ports ASIC_MOSI]
 
 
 set_property PACKAGE_PIN AC21 [get_ports {ASIC_DISCRI[0]}]
@@ -321,9 +321,9 @@ set_property IOSTANDARD LVCMOS33 [get_ports {NIM_OUT[*]}]
 
 # ASIC -----------------------------------------------------------------
 #set_property IOSTANDARD LVCMOS12 [get_ports ASIC_REFC[*]]
-#set_property IOSTANDARD LVCMOS12 [get_ports ASIC_SSB[*]]
-#set_property IOSTANDARD LVCMOS12 [get_ports ASIC_SCK]
-#set_property IOSTANDARD LVCMOS12 [get_ports ASIC_MOSI]
+set_property IOSTANDARD LVCMOS12 [get_ports ASIC_SSB[*]]
+set_property IOSTANDARD LVCMOS12 [get_ports ASIC_SCK]
+set_property IOSTANDARD LVCMOS12 [get_ports ASIC_MOSI]
 
 
 set_property IOSTANDARD LVCMOS12 [get_ports {ASIC_DISCRI[*]}]

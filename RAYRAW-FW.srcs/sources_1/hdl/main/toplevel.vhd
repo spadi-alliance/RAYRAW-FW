@@ -11,6 +11,7 @@ use mylib.defToplevel.all;
 use mylib.defTRM.all;
 use mylib.defTdcBlock.all;
 use mylib.defMTDC.all;
+use mylib.defYAENAMIController.all;
 use mylib.defEVB.all;
 use mylib.defSiTCP.all;
 use mylib.defMiiRstTimer.all;
@@ -74,9 +75,9 @@ entity toplevel is
     
     -- ASIC -----------------------------------------------------------------
     -- ASIC_REFC           : out std_logic_vector(3 downto 0);
-    -- ASIC_SSB            : out std_logic_vector(3 downto 0);
-    -- ASIC_SCK            : out std_logic;
-    -- ASIC_MOSI           : out std_logic;
+    ASIC_SSB            : out std_logic_vector(3 downto 0);
+    ASIC_SCK            : out std_logic;
+    ASIC_MOSI           : out std_logic;
     
     
     ASIC_DISCRI         : in std_logic_vector(31 downto 0)
@@ -581,6 +582,33 @@ begin
       weLocalBus          => we_LocalBus(kIOM.ID),
       readyLocalBus       => ready_LocalBus(kIOM.ID)
       );
+  -- YSC (YAENAMI Slow Control) -------------------------------------------------------------------------------    
+  u_YSC_Inst : entity mylib.YAENAMIController
+    generic map  -- use generic parameters in SctDriver.vhd
+    (
+      kFreqSysClk   => 125_000_000,
+      kNumIO        => kNumASIC,  -- # of ASICs; defined in defToplevel.vhd
+      enDebug       => false
+    )
+    port map
+    (
+      -- System --
+      rst         => user_reset,   -- port name(defined in SctDriver) => signal name
+      clk         => clk_sys,
+  
+      -- Rx Chip port --
+      SSB         => ASIC_SSB,  -- vector
+      MOSI        => ASIC_MOSI,
+      SCK         => ASIC_SCK,
+  
+      -- Local bus --
+      addrLocalBus      => addr_LocalBus,
+      dataLocalBusIn    => data_LocalBusIn,
+      dataLocalBusOut   => data_LocalBusOut(kYSC.ID),
+      reLocalBus        => re_LocalBus(kYSC.ID),
+      weLocalBus        => we_LocalBus(kYSC.ID),
+      readyLocalBus     => ready_LocalBus(kYSC.ID)
+  );
 
   -- EVB -------------------------------------------------------------------------------
   evb_reset   <= user_reset OR evb_reset_from_DCT;

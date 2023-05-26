@@ -11,4 +11,6 @@ package defToplevel is
   constant kNumNIM              : integer:= 2;
   constant kNumGtx              : integer:= 1;
 
+  constant kNumASIC		: integer:= 4;
+
   end package defToplevel;
