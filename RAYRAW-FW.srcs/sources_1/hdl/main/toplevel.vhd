@@ -11,7 +11,9 @@ use mylib.defToplevel.all;
 use mylib.defTRM.all;
 use mylib.defTdcBlock.all;
 use mylib.defMTDC.all;
-use mylib.defYAENAMIController.all;
+use mylib.defYAENAMIController.all; -- Slow Control
+use mylib.defMAX.all; -- APD_BIAS
+use mylib.defC6C.all;
 use mylib.defEVB.all;
 use mylib.defSiTCP.all;
 use mylib.defMiiRstTimer.all;
@@ -57,15 +59,16 @@ entity toplevel is
     NIM_OUT             : out std_logic_vector(2 downto 1);
     
     -- JItter cleaner -------------------------------------------------------
-    -- CDCE_PDB            : out std_logic;
-    -- CDCE_LOCK           : in std_logic;
-    -- CDCE_SCLK           : out std_logic;
-    -- CDCE_SO             : in std_logic;
-    -- CDCE_SI             : out std_logic;
-    -- CDCE_SEN            : out std_logic;
-    -- CDCE_REFP           : out std_logic;
-    -- CDCE_CLKP           : in std_logic_vector(1 downto 0);
-    -- CDCE_CLKN           : in std_logic_vector(1 downto 0);
+    CDCE_PDB            : out std_logic;
+    CDCE_LOCK           : in std_logic;
+    CDCE_SCLK           : out std_logic;
+    CDCE_SO             : in std_logic;
+    CDCE_SI             : out std_logic;
+    CDCE_SEN            : out std_logic;
+    CDCE_REFP           : out std_logic;
+    CDCE_REFN           : out std_logic;
+    CDCE_CLKP           : in std_logic_vector(1 downto 0);
+    CDCE_CLKN           : in std_logic_vector(1 downto 0);
     
     -- MIKUMARI -------------------------------------------------------------
     -- CDCM_RX_P           : in std_logic;
@@ -80,15 +83,15 @@ entity toplevel is
     ASIC_MOSI           : out std_logic;
     
     
-    ASIC_DISCRI         : in std_logic_vector(31 downto 0)
+    ASIC_DISCRI         : in std_logic_vector(31 downto 0);
     
     -- TRIGGER_OUT ----------------------------------------------------------
     -- TRIG_O              : out std_logic_vector(31 downto 0);
     
     -- APD_BIAS -------------------------------------------------------------
-    -- CP_CS_B             : out std_logic;
-    -- CP_SCLK             : out std_logic;
-    -- CP_DIN              : out std_logic;
+    CP_CS_B             : out std_logic;
+    CP_SCLK             : out std_logic;
+    CP_DIN              : out std_logic
     -- CP_CL_B             : in std_logic;
     
     -- ASIC_ADC -------------------------------------------------------------
@@ -168,7 +171,7 @@ architecture Behavioral of toplevel is
     Index : DipID;
   end record;
   constant kSiTCP     : regLeaf := (Index => 1);
-  constant kNC1       : regLeaf := (Index => 2);
+  constant kC6CON     : regLeaf := (Index => 2);
   constant kNC2       : regLeaf := (Index => 3);
   constant kNC3       : regLeaf := (Index => 4);
   constant kNC4       : regLeaf := (Index => 5);
@@ -203,6 +206,9 @@ architecture Behavioral of toplevel is
   signal ext_clr          : std_logic;
   signal ext_busy         : std_logic;
 
+  -- C6C ----------------------------------------------------------------------------------
+  signal c6c_reset        : std_logic;
+  
   -- EVB ----------------------------------------------------------------------------------
   signal evb_reset        : std_logic;
 
@@ -427,6 +433,7 @@ begin
     generic map(kNumDelay => 128)
     port map(clk_link, USR_RSTB, delayed_usr_rstb);
 
+  c6c_reset       <= '1' when(dip_sw(kC6CON.Index) = '0') else (not delayed_usr_rstb);
   mmcm_cdcm_reset <= (not delayed_usr_rstb);
 
   clk_locked    <= clk_locked_sys and clk_locked_cdcm;
@@ -447,7 +454,8 @@ begin
   asic_discri_input  <= ASIC_DISCRI;
 
   -- TRM -------------------------------------------------------------------------------
-  LED <= clk_locked_sys & clk_locked_cdcm & module_busy &  tcp_isActive;
+  -- LED <= clk_locked_sys & clk_locked_cdcm & module_busy &  tcp_isActive;
+  LED <= CDCE_LOCK & clk_locked_cdcm & module_busy &  tcp_isActive;
 
   seq_busy   <= tdc_busy;-- OR dip_sw(kFBUSY.Index);
 
@@ -566,7 +574,8 @@ begin
       ExtBusy             => ext_busy,
 
       -- NIM output signal --
-      NimOut              => NIM_OUT,
+      -- NimOut              => NIM_OUT,
+      NimOut              => open,
       ModuleBusy          => module_busy,
       DaqGate             => daq_gate,
       clk1MHz             => clk_1MHz,
@@ -582,12 +591,13 @@ begin
       weLocalBus          => we_LocalBus(kIOM.ID),
       readyLocalBus       => ready_LocalBus(kIOM.ID)
       );
-  -- YSC (YAENAMI Slow Control) -------------------------------------------------------------------------------    
+  -- YSC (YAENAMI Slow Control) ---------------------------------------------------------    
   u_YSC_Inst : entity mylib.YAENAMIController
     generic map  -- use generic parameters in SctDriver.vhd
     (
       kFreqSysClk   => 125_000_000,
-      kNumIO        => kNumASIC,  -- # of ASICs; defined in defToplevel.vhd
+      kNumIO        => kNumIO,   -- # of MOSI lines: defined in defToplevel.vhd
+      kNumASIC      => kNumASIC, -- # of ASICs; defined in defToplevel.vhd
       enDebug       => false
     )
     port map
@@ -609,6 +619,62 @@ begin
       weLocalBus        => we_LocalBus(kYSC.ID),
       readyLocalBus     => ready_LocalBus(kYSC.ID)
   );
+
+  -- APD_BIAS -------------------------------------------------------------------------
+  u_APD_Inst : entity mylib.MAX1932Controller
+    generic map(
+      kSysClkFreq         => 125_000_000
+    )
+    port map(
+      rst	          => user_reset,
+      clk	          => clk_sys,
+
+      -- Module output --
+      CSB_SPI           => CP_CS_B,
+      SCLK_SPI          => CP_SCLK,
+      MOSI_SPI          => CP_DIN,
+
+      -- Local bus --
+      addrLocalBus	    => addr_LocalBus,
+      dataLocalBusIn	  => data_LocalBusIn,
+      dataLocalBusOut	  => data_LocalBusOut(kAPD.ID),
+      reLocalBus	      => re_LocalBus(kAPD.ID),
+      weLocalBus	      => we_LocalBus(kAPD.ID),
+      readyLocalBus	    => ready_LocalBus(kAPD.ID)
+    );
+
+  -- C6C -------------------------------------------------------------------------------
+  u_C6C_Inst : entity mylib.CDCE62002Controller
+    generic map(
+      kSysClkFreq         => 125_000_000,
+      kIoStandard         => "LVDS"
+    )
+    port map(
+      rst	                => system_reset,
+      clk	                => clk_sys,
+      refClkIn            => clk_link,
+
+      chipReset           => c6c_reset,
+      clkIndep            => clk_sys,
+      chipLock            => CDCE_LOCK,
+
+      -- Module output --
+      PDB                 => CDCE_PDB,
+      REF_CLKP            => CDCE_REFP,
+      REF_CLKN            => CDCE_REFN,
+      CSB_SPI             => CDCE_SEN,
+      SCLK_SPI            => CDCE_SCLK,
+      MOSI_SPI            => CDCE_SI,
+      MISO_SPI            => CDCE_SO,
+
+      -- Local bus --
+      addrLocalBus	      => addr_LocalBus,
+      dataLocalBusIn	    => data_LocalBusIn,
+      dataLocalBusOut	    => data_LocalBusOut(kC6C.ID),
+      reLocalBus		      => re_LocalBus(kC6C.ID),
+      weLocalBus		      => we_LocalBus(kC6C.ID),
+      readyLocalBus	      => ready_LocalBus(kC6C.ID)
+    );
 
   -- EVB -------------------------------------------------------------------------------
   evb_reset   <= user_reset OR evb_reset_from_DCT;
@@ -998,5 +1064,30 @@ begin
       clk10kHz    => clk_10kHz,
       clk1kHz     => clk_1kHz
       );
+
+  -- CDCE clocks --
+  -- pll_is_locked   <= (mmcm_cdcm_locked or CDCE_LOCK) and clk_sys_locked;
+
+  u_IBUFDS_SLOW_inst : IBUFDS
+    generic map (
+       DIFF_TERM => TRUE, -- Differential Termination
+       IBUF_LOW_PWR => FALSE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+       IOSTANDARD => "LVDS")
+    port map (
+       O => NIM_OUT(1),  -- Buffer output
+       I => CDCE_CLKP(0),  -- Diff_p buffer input (connect directly to top-level port)
+       IB => CDCE_CLKN(0) -- Diff_n buffer input (connect directly to top-level port)
+       );
+
+  u_IBUFDS_FAST_inst : IBUFDS
+    generic map (
+       DIFF_TERM => TRUE, -- Differential Termination
+       IBUF_LOW_PWR => FALSE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+       IOSTANDARD => "LVDS")
+    port map (
+       O => NIM_OUT(2),  -- Buffer output
+       I => CDCE_CLKP(1),  -- Diff_p buffer input (connect directly to top-level port)
+       IB => CDCE_CLKN(1) -- Diff_n buffer input (connect directly to top-level port)
+       );
 
 end Behavioral;

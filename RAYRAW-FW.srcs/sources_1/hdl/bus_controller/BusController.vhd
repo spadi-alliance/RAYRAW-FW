@@ -136,6 +136,8 @@ begin
               when kMidTDC  => i_module <= kTDC.ID;
               when kMidIOM  => i_module <= kIOM.ID;
               when kMidYSC  => i_module <= kYSC.ID;
+              when kMidAPD  => i_module <= kAPD.ID;
+              when kMidC6C  => i_module <= kC6C.ID;
               when kMidSDS  => i_module <= kSDS.ID;
               when kMidFMP  => i_module <= kFMP.ID;
               when others   => i_module <= kDummy.ID;

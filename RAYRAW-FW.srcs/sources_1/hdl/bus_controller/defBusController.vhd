@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 package defBCT is
 
   constant kCurrentVersion      : std_logic_vector(31 downto 0):= x"01600100";
-  constant kNumModules          : natural:= 7;
+  constant kNumModules          : natural:= 9;
 
   -- Local Bus definition
   constant kWidthLocalAddress   : positive:=12;
@@ -40,6 +40,8 @@ package defBCT is
   -- kMidTDC:		0010
   -- kMidIOM:		0011
   -- kMidYSC:		0100
+  -- kMidAPD:		0101
+  -- kMidC6C:		0110
   -- kMidSDS:		1100
   -- kMidFMP:		1101
   -- kMidBCT:		1110
@@ -51,6 +53,8 @@ package defBCT is
   constant kMidTDC      : std_logic_vector(kWidthModuleID-1 downto 0) := "0010";
   constant kMidIOM      : std_logic_vector(kWidthModuleID-1 downto 0) := "0011";
   constant kMidYSC      : std_logic_vector(kWidthModuleID-1 downto 0) := "0100";
+  constant kMidAPD      : std_logic_vector(kWidthModuleID-1 downto 0) := "0101";
+  constant kMidC6C      : std_logic_vector(kWidthModuleID-1 downto 0) := "0110";
   constant kMidSDS      : std_logic_vector(kWidthModuleID-1 downto 0) := "1100";
   constant kMidFMP      : std_logic_vector(kWidthModuleID-1 downto 0) := "1101";
   constant kMidBCT      : std_logic_vector(kWidthModuleID-1 downto 0) := "1110";
@@ -72,12 +76,14 @@ package defBCT is
   constant kTDC	  : Leaf := (ID => 2);
   constant kIOM	  : Leaf := (ID => 3);
   constant kYSC	  : Leaf := (ID => 4);
-  constant kSDS	  : Leaf := (ID => 5);
-  constant kFMP   : Leaf := (ID => 6);
+  constant kAPD	  : Leaf := (ID => 5);
+  constant kC6C	  : Leaf := (ID => 6);
+  constant kSDS	  : Leaf := (ID => 7);
+  constant kFMP   : Leaf := (ID => 8);
   constant kDummy : Leaf := (ID => -1);
 
   constant AddressBook : Binder(kNumModules-1 downto 0) :=
-    ( 0=>kTRM, 1=>kDCT, 2=>kTDC, 3=>kIOM, 4=>kYSC, 5=>kSDS, 6=>kFMP, others=>kDummy );
+    ( 0=>kTRM, 1=>kDCT, 2=>kTDC, 3=>kIOM, 4=>kYSC, 5=>kAPD, 6=>kC6C, 7=>kSDS, 8=>kFMP, others=>kDummy );
 
   -- Local bus state machine -----------------------------------------
   type AddressArray is array (integer range kNumModules-1 downto 0)
