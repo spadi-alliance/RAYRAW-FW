@@ -12,6 +12,7 @@ entity YAENAMIController is
   (
     kFreqSysClk   : integer:= 125_000_000;
     kNumIO        : integer:= 32;
+    kNumASIC      : integer:= 4;
     enDebug       : boolean:= false
   );
   port
@@ -21,7 +22,7 @@ entity YAENAMIController is
     clk         : in std_logic; -- System clock
 
     -- Rx Chip port --
-    SSB		    : out std_logic_vector(3 downto 0); -- remove MagicNumber later?
+    SSB		    : out std_logic_vector(kNumASIC-1 downto 0); -- remove MagicNumber later?
     MOSI        : out std_logic;
     SCK		    : out std_logic;
 
@@ -48,6 +49,8 @@ architecture RTL of YAENAMIController is
   signal en_write       : std_logic_vector(kNumIO-1 downto 0);
   signal start_a_cycle  : std_logic_vector(kNumIO-1 downto 0);
   signal busy_tx        : std_logic_vector(kNumIO-1 downto 0);
+  signal chip_select    : std_logic_vector(kNumASIC-1 downto 0);
+  signal ssb_origin     : std_logic;
 
   signal write_address  : std_logic_vector(7 downto 0);
 
@@ -63,6 +66,7 @@ architecture RTL of YAENAMIController is
 begin
   -- =============================== body ===============================
 
+  
   gen_RxChip : for i in 0 to kNumIO-1 generate
   begin
 
@@ -80,11 +84,16 @@ begin
         busy      => busy_tx(i),
 
         -- TX port --
-	    SSB	      => SSB(i),
+        SSB	      => ssb_origin,
         MOSI      => MOSI,
 	    SCK	      => SCK
       );
-    end generate;
+  end generate;
+    
+  SSB(0) <= ssb_origin when chip_select(0) = '1' else '1';
+  SSB(1) <= ssb_origin when chip_select(1) = '1' else '1';
+  SSB(2) <= ssb_origin when chip_select(2) = '1' else '1';
+  SSB(3) <= ssb_origin when chip_select(3) = '1' else '1';
 
   ---------------------------------------------------------------------
   -- Local bus process
@@ -123,7 +132,7 @@ begin
           case addrLocalBus(kNonMultiByte'range) is
             when kStartCycle(kNonMultiByte'range) =>
             if(addrLocalBus(kMultiByte'range) = k1stByte) then
-                start_a_cycle   <= dataLocalBusIn(3 downto 0);
+                start_a_cycle   <= dataLocalBusIn(kNumIO-1 downto 0);
               else
                 null;
               end if;
@@ -140,7 +149,7 @@ begin
           case addrLocalBus(kNonMultiByte'range) is
             when kBusyFlag(kNonMultiByte'range) =>
               if(addrLocalBus(kMultiByte'range) = k1stByte) then
-                dataLocalBusOut   <= "0000" & busy_tx(3 downto 0);
+                dataLocalBusOut   <= "0000000" & busy_tx(kNumIO-1 downto 0); -- TODO: set # of '0' using kNumIO
               else
                 null;
               end if;
