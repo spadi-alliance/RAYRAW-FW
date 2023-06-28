@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 
 package defBCT is
 
-  constant kCurrentVersion      : std_logic_vector(31 downto 0):= x"01600100";
+  constant kCurrentVersion      : std_logic_vector(31 downto 0):= x"01600101";
   constant kNumModules          : natural:= 9;
 
   -- Local Bus definition
@@ -35,26 +35,29 @@ package defBCT is
   -- Local Module ID ------------------------------------------------------
   -- Module ID Map
   -- <Module ID : 31-28> + <Local Address 27 - 16>
-  -- kMidTRM:		0000
-  -- kMidDCT:		0001
-  -- kMidTDC:		0010
-  -- kMidIOM:		0011
-  -- kMidYSC:		0100
-  -- kMidAPD:		0101
-  -- kMidC6C:		0110
+  -- kMidYSC:		0000 (Reserved)
+
+  -- kMidTRM:		0001
+  -- kMidDCT:		0010
+  -- kMidTDC:		0011
+  -- kMidIOM:		0100
+
+  -- kMidAPD:		1001
+  -- kMidC6C:		1011
   -- kMidSDS:		1100
   -- kMidFMP:		1101
   -- kMidBCT:		1110
   -- SiTCP:		  1111 (Reserved)
 
   -- Module ID
-  constant kMidTRM      : std_logic_vector(kWidthModuleID-1 downto 0) := "0000";
-  constant kMidDCT      : std_logic_vector(kWidthModuleID-1 downto 0) := "0001";
-  constant kMidTDC      : std_logic_vector(kWidthModuleID-1 downto 0) := "0010";
-  constant kMidIOM      : std_logic_vector(kWidthModuleID-1 downto 0) := "0011";
-  constant kMidYSC      : std_logic_vector(kWidthModuleID-1 downto 0) := "0100";
-  constant kMidAPD      : std_logic_vector(kWidthModuleID-1 downto 0) := "0101";
-  constant kMidC6C      : std_logic_vector(kWidthModuleID-1 downto 0) := "0110";
+  constant kMidYSC      : std_logic_vector(kWidthModuleID-1 downto 0) := "0000";
+  constant kMidTRM      : std_logic_vector(kWidthModuleID-1 downto 0) := "0001";
+  constant kMidDCT      : std_logic_vector(kWidthModuleID-1 downto 0) := "0010";
+  constant kMidTDC      : std_logic_vector(kWidthModuleID-1 downto 0) := "0011";
+  constant kMidIOM      : std_logic_vector(kWidthModuleID-1 downto 0) := "0100";
+
+  constant kMidAPD      : std_logic_vector(kWidthModuleID-1 downto 0) := "1001";
+  constant kMidC6C      : std_logic_vector(kWidthModuleID-1 downto 0) := "1011";
   constant kMidSDS      : std_logic_vector(kWidthModuleID-1 downto 0) := "1100";
   constant kMidFMP      : std_logic_vector(kWidthModuleID-1 downto 0) := "1101";
   constant kMidBCT      : std_logic_vector(kWidthModuleID-1 downto 0) := "1110";
@@ -71,11 +74,11 @@ package defBCT is
   end record;
 
   type Binder is array (integer range <>) of Leaf;
-  constant kTRM	  : Leaf := (ID => 0);
-  constant kDCT	  : Leaf := (ID => 1);
-  constant kTDC	  : Leaf := (ID => 2);
-  constant kIOM	  : Leaf := (ID => 3);
-  constant kYSC	  : Leaf := (ID => 4);
+  constant kYSC	  : Leaf := (ID => 0);
+  constant kTRM	  : Leaf := (ID => 1);
+  constant kDCT	  : Leaf := (ID => 2);
+  constant kTDC	  : Leaf := (ID => 3);
+  constant kIOM	  : Leaf := (ID => 4);
   constant kAPD	  : Leaf := (ID => 5);
   constant kC6C	  : Leaf := (ID => 6);
   constant kSDS	  : Leaf := (ID => 7);
