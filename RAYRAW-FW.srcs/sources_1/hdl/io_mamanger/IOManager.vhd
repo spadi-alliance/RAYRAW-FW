@@ -66,7 +66,7 @@ begin
                  clk100kHz  when(reg_nimout_1 = "0011") else
                  clk10kHz   when(reg_nimout_1 = "0100") else
                  clk1kHz    when(reg_nimout_1 = "0101") else
-                 '0'        when(reg_nimout_1 = "1111") else
+                 '0'        when(reg_nimout_1 = "1110") else
                  moduleBusy;
 
   nim_out(2)  <= moduleBusy when(reg_nimout_2 = "0000") else
@@ -75,7 +75,7 @@ begin
                  clk100kHz  when(reg_nimout_2 = "0011") else
                  clk10kHz   when(reg_nimout_2 = "0100") else
                  clk1kHz    when(reg_nimout_2 = "0101") else
-                  '0'       when(reg_nimout_2 = "1111") else
+                  '0'       when(reg_nimout_2 = "1110") else
                  clk1kHz;
 
 
@@ -83,22 +83,22 @@ begin
   nim_in  <= nimIn;
   extL1   <= nim_in(1) when(reg_extL1 = "000") else
              nim_in(2) when(reg_extL1 = "001") else
-             '0'       when(reg_extL1 = "111") else
+             '0'       when(reg_extL1 = "110") else
              nim_in(1);
 
   extL2   <= nim_in(1) when(reg_extL2 = "000") else
              nim_in(2) when(reg_extL2 = "001") else
-             nim_in(2) when(reg_extL2 = "111") else
+             '0'       when(reg_extL2 = "110") else
              '0';
 
   extClr  <= nim_in(1) when(reg_extClr = "000") else
              nim_in(2) when(reg_extClr = "001") else
-             nim_in(2) when(reg_extClr = "111") else
+             '0'       when(reg_extClr = "110") else
              '0';
 
   extBusy  <= nim_in(1) when(reg_ext_busy = "000") else
               nim_in(2) when(reg_ext_busy = "001") else
-              nim_in(2) when(reg_ext_busy = "111") else
+              '0'       when(reg_ext_busy = "110") else
               nim_in(2);
 
   -- Bus process -------------------------------------------------------------
