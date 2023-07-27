@@ -30,7 +30,7 @@ entity toplevel is
     DIP                 : in std_logic_vector(8 downto 1);
     VP                  : in std_logic;
     VN                  : in std_logic;
-    
+
     -- GTX ------------------------------------------------------------------
     GTX_REFCLK_P        : in std_logic;        -- not included in .xlsx
     GTX_REFCLK_N        : in std_logic;        -- not included in .xlsx
@@ -40,24 +40,24 @@ entity toplevel is
     GTX_RX_N            : in std_logic_vector(0 downto 0);
     -- SFP_SCL             : inout std_logic;
     -- SFP_SDA             : inout std_logic;
-    
+
     -- SPI flash ------------------------------------------------------------
     SPI_MOSI            : out std_logic;
     SPI_DIN             : in std_logic;
     -- SPI_D2              : in std_logic;
     -- SPI_D3              : in std_logic;
     FCSB                : out std_logic;
-    
+
     -- EEPROM ---------------------------------------------------------------
     EEP_CS              : out std_logic;
     EEP_SK              : out std_logic;
     EEP_DI              : out std_logic;
     EEP_DO              : in std_logic;
-    
+
     -- NIM-IO ---------------------------------------------------------------
     NIM_IN              : in std_logic_vector(2 downto 1);
     NIM_OUT             : out std_logic_vector(2 downto 1);
-    
+
     -- JItter cleaner -------------------------------------------------------
     CDCE_PDB            : out std_logic;
     CDCE_LOCK           : in std_logic;
@@ -69,48 +69,48 @@ entity toplevel is
     CDCE_REFN           : out std_logic;
     CDCE_CLKP           : in std_logic_vector(1 downto 0);
     CDCE_CLKN           : in std_logic_vector(1 downto 0);
-    
+
     -- MIKUMARI -------------------------------------------------------------
     -- CDCM_RX_P           : in std_logic;
     -- CDCM_RX_N           : in std_logic;
     -- CDCM_TX_P           : out std_logic;
     -- CDCM_TX_N           : out std_logic;
-    
+
     -- ASIC -----------------------------------------------------------------
     -- ASIC_REFC           : out std_logic_vector(3 downto 0);
     ASIC_SSB            : out std_logic_vector(3 downto 0);
     ASIC_SCK            : out std_logic;
     ASIC_MOSI           : out std_logic;
-    
-    
+
+
     ASIC_DISCRI         : in std_logic_vector(31 downto 0);
-    
+
     -- TRIGGER_OUT ----------------------------------------------------------
     -- TRIG_O              : out std_logic_vector(31 downto 0);
-    
+
     -- APD_BIAS -------------------------------------------------------------
     CP_CS_B             : out std_logic;
     CP_SCLK             : out std_logic;
     CP_DIN              : out std_logic
     -- CP_CL_B             : in std_logic;
-    
+
     -- ASIC_ADC -------------------------------------------------------------
     -- ADC_DATA_P          : in std_logic_vector(31 downto 0);
-    
-    
+
+
     -- ADC_DATA_N          : in std_logic_vector(31 downto 0);
-    
-    
+
+
     -- ADC_DFRAME_P        : in std_logic_vector(3 downto 0);
     -- ADC_DFRAME_N        : in std_logic_vector(3 downto 0);
     -- ADC_DCLK_P          : in std_logic_vector(3 downto 0);
     -- ADC_DCLK_N          : in std_logic_vector(3 downto 0);
-    
+
     -- MEZZANINE ------------------------------------------------------------
     -- MZN_P               : inout std_logic_vector(7 downto 0);
     -- MZN_N               : inout std_logic_vector(7 downto 0);
-    
-    
+
+
     -- System ----------------------------------------------------------------
     -- CLKOSC        : in std_logic; -- 50 MHz
     -- LED           : out std_logic_vector(kNumLED-1 downto 0);
@@ -208,7 +208,7 @@ architecture Behavioral of toplevel is
 
   -- C6C ----------------------------------------------------------------------------------
   signal c6c_reset        : std_logic;
-  
+
   -- EVB ----------------------------------------------------------------------------------
   signal evb_reset        : std_logic;
 
@@ -450,6 +450,9 @@ begin
   dip_sw(6)   <= DIP(6);
   dip_sw(7)   <= DIP(7);
 
+  NIM_OUT(1)  <= trigger_out.L1accept;
+  NIM_OUT(2)  <= ext_L1;
+
   -- Fixed input ports -------------------------------------------------------
   asic_discri_input  <= ASIC_DISCRI;
 
@@ -523,7 +526,8 @@ begin
       );
 
   -- TDC -------------------------------------------------------------------------------
-  sig_in_tdc(0)   <= ASIC_DISCRI;
+  sig_in_tdc(0)(0)             <= NIM_IN(2);
+  sig_in_tdc(0)(31 downto 1)   <= ASIC_DISCRI(31 downto 1);
 
   data_bbus(kBbTDCL0.ID) <= data_tdc_bbus(0);
   data_bbus(kBbTDCT0.ID) <= data_tdc_bbus(1);
@@ -591,7 +595,7 @@ begin
       weLocalBus          => we_LocalBus(kIOM.ID),
       readyLocalBus       => ready_LocalBus(kIOM.ID)
       );
-  -- YSC (YAENAMI Slow Control) ---------------------------------------------------------    
+  -- YSC (YAENAMI Slow Control) ---------------------------------------------------------
   u_YSC_Inst : entity mylib.YAENAMIController
     generic map  -- use generic parameters in SctDriver.vhd
     (
@@ -605,12 +609,12 @@ begin
       -- System --
       rst         => user_reset,   -- port name(defined in SctDriver) => signal name
       clk         => clk_sys,
-  
+
       -- Rx Chip port --
       SSB         => ASIC_SSB,  -- vector
       MOSI        => ASIC_MOSI,
       SCK         => ASIC_SCK,
-  
+
       -- Local bus --
       addrLocalBus      => addr_LocalBus,
       dataLocalBusIn    => data_LocalBusIn,
@@ -1068,26 +1072,26 @@ begin
   -- CDCE clocks --
   -- pll_is_locked   <= (mmcm_cdcm_locked or CDCE_LOCK) and clk_sys_locked;
 
-  u_IBUFDS_SLOW_inst : IBUFDS
-    generic map (
-       DIFF_TERM => TRUE, -- Differential Termination
-       IBUF_LOW_PWR => FALSE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
-       IOSTANDARD => "LVDS")
-    port map (
-       O => NIM_OUT(1),  -- Buffer output
-       I => CDCE_CLKP(0),  -- Diff_p buffer input (connect directly to top-level port)
-       IB => CDCE_CLKN(0) -- Diff_n buffer input (connect directly to top-level port)
-       );
-
-  u_IBUFDS_FAST_inst : IBUFDS
-    generic map (
-       DIFF_TERM => TRUE, -- Differential Termination
-       IBUF_LOW_PWR => FALSE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
-       IOSTANDARD => "LVDS")
-    port map (
-       O => NIM_OUT(2),  -- Buffer output
-       I => CDCE_CLKP(1),  -- Diff_p buffer input (connect directly to top-level port)
-       IB => CDCE_CLKN(1) -- Diff_n buffer input (connect directly to top-level port)
-       );
+--  u_IBUFDS_SLOW_inst : IBUFDS
+--    generic map (
+--       DIFF_TERM => TRUE, -- Differential Termination
+--       IBUF_LOW_PWR => FALSE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+--       IOSTANDARD => "LVDS")
+--    port map (
+--       O => NIM_OUT(1),  -- Buffer output
+--       I => CDCE_CLKP(0),  -- Diff_p buffer input (connect directly to top-level port)
+--       IB => CDCE_CLKN(0) -- Diff_n buffer input (connect directly to top-level port)
+--       );
+--
+--  u_IBUFDS_FAST_inst : IBUFDS
+--    generic map (
+--       DIFF_TERM => TRUE, -- Differential Termination
+--       IBUF_LOW_PWR => FALSE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+--       IOSTANDARD => "LVDS")
+--    port map (
+--       O => NIM_OUT(2),  -- Buffer output
+--       I => CDCE_CLKP(1),  -- Diff_p buffer input (connect directly to top-level port)
+--       IB => CDCE_CLKN(1) -- Diff_n buffer input (connect directly to top-level port)
+--       );
 
 end Behavioral;

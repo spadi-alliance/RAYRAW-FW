@@ -16,7 +16,7 @@ package defMTDC is
 --  constant kInitialCh : typeInitCh := (0);
 
   -- Local Address --------------------------------------------------------
-  constant kEnBlock         : LocalAddressType := x"000"; -- W/R, [7:0] Enable blocks
+  constant kEnBlock         : LocalAddressType := x"000"; -- W/R, [1:0] Enable blocks
   constant kOfsPtr          : LocalAddressType := x"010"; -- W/R, [10:0], pointer offset of the read pointer for ring buffer
   constant kWinMax          : LocalAddressType := x"020"; -- W/R, [10:0], Max coarse counter
   constant kWinMin          : LocalAddressType := x"030"; -- W/R, [10:0], Min coarse counter
