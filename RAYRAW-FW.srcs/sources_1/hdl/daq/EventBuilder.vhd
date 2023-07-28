@@ -123,27 +123,27 @@ architecture RTL of EventBuilder is
   END COMPONENT;
 
   -- Debug ---------------------------------------------------------------------
-  attribute mark_debug of data_ready_rvm  : signal is "true";
-  attribute mark_debug of data_ready_user  : signal is "true";
-  attribute mark_debug of trig_ready  : signal is "true";
-
-  attribute mark_debug of state_evb   : signal is "true";
-  attribute mark_debug of state_bbus       : signal is "true";
-  attribute mark_debug of bbus_dest   : signal is "true";
-  attribute mark_debug of num_read_word   : signal is "true";
-  attribute mark_debug of local_data_address   : signal is "true";
-  attribute mark_debug of req_bbus_cycle   : signal is "true";
-  attribute mark_debug of ack_bbus_cycle   : signal is "true";
-  attribute mark_debug of addr_bbus   : signal is "true";
-  attribute mark_debug of re_bbus   : signal is "true";
-  attribute mark_debug of rv_bbus   : signal is "true";
-  attribute mark_debug of dready_bbus   : signal is "true";
-  attribute mark_debug of bind_bbus   : signal is "true";
-  attribute mark_debug of is_bound_bbus   : signal is "true";
-  attribute mark_debug of reg_read_count   : signal is "true";
-  attribute mark_debug of read_count   : signal is "true";
-  attribute mark_debug of recv_count   : signal is "true";
-  attribute mark_debug of index_bbus  : signal is "true";
+  --attribute mark_debug of data_ready_rvm  : signal is "true";
+  --attribute mark_debug of data_ready_user  : signal is "true";
+  --attribute mark_debug of trig_ready  : signal is "true";
+--
+  --attribute mark_debug of state_evb   : signal is "true";
+  --attribute mark_debug of state_bbus       : signal is "true";
+  --attribute mark_debug of bbus_dest   : signal is "true";
+  --attribute mark_debug of num_read_word   : signal is "true";
+  --attribute mark_debug of local_data_address   : signal is "true";
+  --attribute mark_debug of req_bbus_cycle   : signal is "true";
+  --attribute mark_debug of ack_bbus_cycle   : signal is "true";
+  --attribute mark_debug of addr_bbus   : signal is "true";
+  --attribute mark_debug of re_bbus   : signal is "true";
+  --attribute mark_debug of rv_bbus   : signal is "true";
+  --attribute mark_debug of dready_bbus   : signal is "true";
+  --attribute mark_debug of bind_bbus   : signal is "true";
+  --attribute mark_debug of is_bound_bbus   : signal is "true";
+  --attribute mark_debug of reg_read_count   : signal is "true";
+  --attribute mark_debug of read_count   : signal is "true";
+  --attribute mark_debug of recv_count   : signal is "true";
+  --attribute mark_debug of index_bbus  : signal is "true";
 --    attribute mark_debug of dInTrm      : signal is "true";
 --    attribute mark_debug of dOutTrm     : signal is "true";
 --    attribute mark_debug of emptyToTSD  : signal is "true";
