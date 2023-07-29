@@ -10,8 +10,8 @@ use mylib.defManchesterEncoder.all;
 
 entity SpiTx is
   generic(
-    freqSysClk : integer := 125_000_000 --input clock speed from user logic in Hz
-    --enDebug    : bool    := false
+    freqSysClk : integer := 125_000_000; --input clock speed from user logic in Hz
+    enDebug    : boolean := false
     );
   port(
     -- System --
@@ -31,6 +31,7 @@ end SpiTx;
 
 architecture RTL of SpiTx is
   -- Signal definition --------------------------------------------------------------------
+  attribute mark_debug  : boolean;
 
   -- SpiTxIf --
   signal reg_data   : DsTxDataType;
@@ -70,6 +71,9 @@ architecture RTL of SpiTx is
       valid : OUT STD_LOGIC
     );
   END COMPONENT;
+
+  -- debug --
+  attribute mark_debug of ssb_out   : signal is enDebug;
 
 begin
   -- ====================================== body ====================================== --
@@ -182,8 +186,8 @@ begin
 
   u_ME : entity mylib.SpiTxIf
     generic map(
-      freqSysClk => freqSysClk
-      --enDebug    : bool    := false
+      freqSysClk => freqSysClk,
+      enDebug    => enDebug
       )
     port map(
       -- System --
