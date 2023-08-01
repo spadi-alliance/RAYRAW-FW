@@ -648,7 +648,7 @@ begin
       kFreqSysClk   => 125_000_000,
       kNumIO        => kNumIO,   -- # of MOSI lines: defined in defToplevel.vhd
       kNumASIC      => kNumASIC, -- # of ASICs; defined in defToplevel.vhd
-      enDebug       => true
+      enDebug       => false
     )
     port map
     (
