@@ -10,6 +10,7 @@ package defYAENAMIController is
   -- Address range of kWriteData is 0x000 to 0x1F0 --
   constant kWriteData       : LocalAddressType := x"000"; -- W,   [7:0]
 
-  constant kBusyFlag        : LocalAddressType := x"200"; -- R,   [3:0]
-  constant kStartCycle      : LocalAddressType := x"300"; -- W,   [3:0]
+  constant kBusyFlag        : LocalAddressType := x"200"; -- R,   [0:0]
+  constant kStartCycle      : LocalAddressType := x"300"; -- W,   [0:0]
+  constant kChipSelect      : LocalAddressType := x"400"; -- W,   [3:0]
 end package;

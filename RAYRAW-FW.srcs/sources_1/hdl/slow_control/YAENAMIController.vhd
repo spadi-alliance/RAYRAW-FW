@@ -23,7 +23,7 @@ entity YAENAMIController is
 
     -- Rx Chip port --
     SSB		    : out std_logic_vector(kNumASIC-1 downto 0); -- remove MagicNumber later?
-    MOSI        : out std_logic;
+    MOSI      : out std_logic;
     SCK		    : out std_logic;
 
     -- Local bus --
@@ -32,7 +32,7 @@ entity YAENAMIController is
     dataLocalBusOut	    : out LocalBusOutType;
     reLocalBus          : in std_logic;
     weLocalBus          : in std_logic;
-    readyLocalBus	    : out std_logic
+    readyLocalBus	      : out std_logic
   );
 end YAENAMIController;
 
@@ -45,14 +45,14 @@ architecture RTL of YAENAMIController is
 
 
   -- Local bus --
-  signal reg_data_in    : DsTxDataType;
-  signal en_write       : std_logic_vector(kNumIO-1 downto 0);
-  signal start_a_cycle  : std_logic_vector(kNumIO-1 downto 0);
-  signal busy_tx        : std_logic_vector(kNumIO-1 downto 0);
-  signal chip_select    : std_logic_vector(kNumASIC-1 downto 0);
-  signal ssb_origin     : std_logic;
+  signal reg_data_in      : DsTxDataType;
+  signal en_write         : std_logic_vector(kNumIO-1 downto 0);
+  signal start_a_cycle    : std_logic_vector(kNumIO-1 downto 0);
+  signal busy_tx          : std_logic_vector(kNumIO-1 downto 0);
+  signal reg_chip_select  : std_logic_vector(kNumASIC-1 downto 0);
+  signal ssb_origin       : std_logic;
 
-  signal write_address  : std_logic_vector(7 downto 0);
+  signal write_address    : std_logic_vector(7 downto 0);
 
   signal state_lbus	: BusProcessType;
 
@@ -66,13 +66,14 @@ architecture RTL of YAENAMIController is
 begin
   -- =============================== body ===============================
 
-  
+
   gen_RxChip : for i in 0 to kNumIO-1 generate
   begin
 
     u_RxChipSpiInst : entity mylib.SpiTx
       generic map(
-        freqSysClk => kFreqSysClk
+        freqSysClk => kFreqSysClk,
+        enDebug    => enDebug
         )
       port map(
         -- System --
@@ -86,14 +87,14 @@ begin
         -- TX port --
         SSB	      => ssb_origin,
         MOSI      => MOSI,
-	    SCK	      => SCK
+	      SCK	      => SCK
       );
   end generate;
-    
-  SSB(0) <= ssb_origin when chip_select(0) = '1' else '1';
-  SSB(1) <= ssb_origin when chip_select(1) = '1' else '1';
-  SSB(2) <= ssb_origin when chip_select(2) = '1' else '1';
-  SSB(3) <= ssb_origin when chip_select(3) = '1' else '1';
+
+  SSB(0) <= ssb_origin when reg_chip_select(0) = '1' else '1';
+  SSB(1) <= ssb_origin when reg_chip_select(1) = '1' else '1';
+  SSB(2) <= ssb_origin when reg_chip_select(2) = '1' else '1';
+  SSB(3) <= ssb_origin when reg_chip_select(3) = '1' else '1';
 
   ---------------------------------------------------------------------
   -- Local bus process
@@ -105,12 +106,14 @@ begin
     if(sync_reset = '1') then
       start_a_cycle   <= (others => '0');
       en_write        <= (others => '0');
+      reg_chip_select <= (others => '0');
       state_lbus	    <= Init;
     elsif(clk'event and clk = '1') then
       case state_lbus is
         when Init =>
           start_a_cycle   <= (others => '0');
           en_write        <= (others => '0');
+          reg_chip_select <= (others => '0');
           dataLocalBusOut <= x"00";
           readyLocalBus		<= '0';
           state_lbus		  <= Idle;
@@ -131,11 +134,15 @@ begin
         when Write =>
           case addrLocalBus(kNonMultiByte'range) is
             when kStartCycle(kNonMultiByte'range) =>
-            if(addrLocalBus(kMultiByte'range) = k1stByte) then
+              if(addrLocalBus(kMultiByte'range) = k1stByte) then
                 start_a_cycle   <= dataLocalBusIn(kNumIO-1 downto 0);
               else
                 null;
               end if;
+              state_lbus	    <= Finalize;
+
+            when kChipSelect(kNonMultiByte'range) =>
+              reg_chip_select <= dataLocalBusIn(kNumASIC-1 downto 0);
               state_lbus	    <= Finalize;
 
             when others =>

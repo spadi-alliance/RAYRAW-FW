@@ -10,8 +10,8 @@ use mylib.defManchesterEncoder.all;
 
 ENTITY SpiTxIf IS
   GENERIC(
-    freqSysClk : integer := 125_000_000 --input clock speed from user logic in Hz
-    --enDebug    : bool    := false
+    freqSysClk : integer := 125_000_000; --input clock speed from user logic in Hz
+    enDebug    : boolean := false
     );
   PORT(
     -- System --
@@ -45,6 +45,8 @@ ARCHITECTURE RTL OF SpiTxIf IS
   signal  int_en, int_en_prev       : std_logic;
 
   -- debug --
+  attribute mark_debug of spi_clk   : signal is enDebug;
+  attribute mark_debug of ser_data  : signal is enDebug;
 
 
 BEGIN

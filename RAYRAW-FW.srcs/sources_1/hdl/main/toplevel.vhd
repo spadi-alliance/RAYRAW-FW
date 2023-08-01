@@ -91,20 +91,18 @@ entity toplevel is
     -- APD_BIAS -------------------------------------------------------------
     CP_CS_B             : out std_logic;
     CP_SCLK             : out std_logic;
-    CP_DIN              : out std_logic
+    CP_DIN              : out std_logic;
     -- CP_CL_B             : in std_logic;
 
     -- ASIC_ADC -------------------------------------------------------------
-    -- ADC_DATA_P          : in std_logic_vector(31 downto 0);
+    ADC_DATA_P          : in std_logic_vector(31 downto 0);
+    ADC_DATA_N          : in std_logic_vector(31 downto 0);
 
 
-    -- ADC_DATA_N          : in std_logic_vector(31 downto 0);
-
-
-    -- ADC_DFRAME_P        : in std_logic_vector(3 downto 0);
-    -- ADC_DFRAME_N        : in std_logic_vector(3 downto 0);
-    -- ADC_DCLK_P          : in std_logic_vector(3 downto 0);
-    -- ADC_DCLK_N          : in std_logic_vector(3 downto 0);
+    ADC_DFRAME_P        : in std_logic_vector(3 downto 0);
+    ADC_DFRAME_N        : in std_logic_vector(3 downto 0);
+    ADC_DCLK_P          : in std_logic_vector(3 downto 0);
+    ADC_DCLK_N          : in std_logic_vector(3 downto 0)
 
     -- MEZZANINE ------------------------------------------------------------
     -- MZN_P               : inout std_logic_vector(7 downto 0);
@@ -180,7 +178,13 @@ architecture Behavioral of toplevel is
   constant kNC7       : regLeaf := (Index => 8);
 
   -- ASIC IO -----------------------------------------------------------------
+  signal asic_adc_data            :  std_logic_vector(ADC_DATA_P'range);
+  signal asic_adc_fco             :  std_logic_vector(ADC_DFRAME_P'range);
+  signal asic_adc_dco             :  std_logic_vector(ADC_DCLK_P'range);
+
   signal asic_discri_input        :  std_logic_vector(ASIC_DISCRI'range);
+
+  signal dummy_signal             : std_logic;
 
   -- TRM ---------------------------------------------------------------------
   signal seq_busy, module_busy    : std_logic;
@@ -451,7 +455,49 @@ begin
   dip_sw(7)   <= DIP(7);
 
   NIM_OUT(1)  <= trigger_out.L1accept;
-  NIM_OUT(2)  <= ext_L1;
+  NIM_OUT(2)  <= dummy_signal;
+
+  dummy_signal  <= or_reduce(asic_adc_data) or or_reduce(asic_adc_fco) or or_reduce(asic_adc_dco);
+
+  -- Temp IO --
+  gen_adc_d : for i in 0 to 31 generate
+  begin
+    u_ibufds_d : IBUFDS
+      generic map (
+        DIFF_TERM => true, -- Differential Termination
+        IBUF_LOW_PWR => true, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+        IOSTANDARD => "LVDS")
+      port map (
+        O  => asic_adc_data(i),  -- Buffer output
+        I  => ADC_DATA_P(i),  -- Diff_p buffer input (connect directly to top-level port)
+        IB => ADC_DATA_N(i) -- Diff_n buffer input (connect directly to top-level port)
+      );
+  end generate;
+
+  gen_adc_fc : for i in 0 to 3 generate
+  begin
+    u_ibufds_f : IBUFDS
+      generic map (
+        DIFF_TERM => true, -- Differential Termination
+        IBUF_LOW_PWR => true, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+        IOSTANDARD => "LVDS")
+      port map (
+        O  => asic_adc_fco(i),  -- Buffer output
+        I  => ADC_DFRAME_P(i),  -- Diff_p buffer input (connect directly to top-level port)
+        IB => ADC_DFRAME_N(i) -- Diff_n buffer input (connect directly to top-level port)
+      );
+
+    u_ibufds_c : IBUFDS
+      generic map (
+        DIFF_TERM => true, -- Differential Termination
+        IBUF_LOW_PWR => true, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+        IOSTANDARD => "LVDS")
+      port map (
+        O  => asic_adc_dco(i),  -- Buffer output
+        I  => ADC_DCLK_P(i),  -- Diff_p buffer input (connect directly to top-level port)
+        IB => ADC_DCLK_N(i) -- Diff_n buffer input (connect directly to top-level port)
+      );
+  end generate;
 
   -- Fixed input ports -------------------------------------------------------
   asic_discri_input  <= ASIC_DISCRI;
