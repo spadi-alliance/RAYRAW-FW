@@ -12,7 +12,7 @@ package defTdcBlock is
   constant kNumDelay270deg    : positive:= 3;
 
   -- FineCounterDecoder parameters -----------------------------------------------------
-  constant kWidthFineCount    : positive:= 3;
+  constant kWidthFineCount    : positive:= 4; -- (semi-fine: 2 bit + fine: 2 bit)
 
   -- Block identification --------------------------------------------------------------
   constant kNumInputBlock     : integer:= 32;
@@ -20,7 +20,7 @@ package defTdcBlock is
 
   -- Ring buffer --
   constant kWidthRingData     : positive:= kWidthFineCount +1;
-  constant kIndexHit          : positive:= 3;
+  constant kIndexHit          : positive:= 4;
   constant kWidthCoarseCount  : positive:= 11;
 
   -- Channel buffer --

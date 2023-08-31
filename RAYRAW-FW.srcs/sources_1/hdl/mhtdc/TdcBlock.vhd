@@ -17,8 +17,8 @@ entity TdcBlock is
     );
   port(
     rst         : in std_logic;
-    sysClk      : in std_logic; -- 150 MHz
-    tdcClk      : in std_logic_vector(kNumTdcClock-1 downto 0); -- 300 MHz
+    sysClk      : in std_logic; -- 100 MHz
+    tdcClk      : in std_logic_vector(kNumTdcClock-1 downto 0); -- 400 MHz
 
     -- control registers --
     busyTdc     : out std_logic;
@@ -27,7 +27,7 @@ entity TdcBlock is
 
     -- data input --
     tdcIn       : in std_logic_vector(kNumInputBlock-1 downto 0);
-    dInStop     : in std_logic_vector(kWidthStopData-1 downto 0); -- 3:CStop bit, 2-0: CStop values
+    dInStop     : in std_logic_vector(kWidthStopData-1 downto 0); -- 4:CStop bit, 3-0: CStop values
 
     -- Builder bus --
     addrBuilderBus      : in  BBusAddressType;
@@ -133,14 +133,14 @@ architecture RTL of TdcBlock is
     PORT (
       clk         : IN STD_LOGIC;
       rst         : IN STD_LOGIC;
-      din         : IN STD_LOGIC_VECTOR(14 DOWNTO 0);
+      din         : IN STD_LOGIC_VECTOR(kWidthChData-1 DOWNTO 0);
       wr_en       : IN STD_LOGIC;
       rd_en       : IN STD_LOGIC;
-      dout        : OUT STD_LOGIC_VECTOR(14 DOWNTO 0);
+      dout        : OUT STD_LOGIC_VECTOR(kWidthChData-1 DOWNTO 0);
       full        : OUT STD_LOGIC;
       empty       : OUT STD_LOGIC;
       valid       : OUT STD_LOGIC;
-      data_count  : OUT STD_LOGIC_VECTOR(6 DOWNTO 0);
+      data_count  : OUT STD_LOGIC_VECTOR(kWidthChDataCount-1 DOWNTO 0);
       prog_full   : OUT STD_LOGIC
       );
   END COMPONENT;
@@ -258,8 +258,8 @@ begin
   offset_ch   <= std_logic_vector(to_unsigned(initCh, kWidthChannel));
 
   -- signal connection ------------------------------------------------------
-  --cstop_issued    <= dInStop(3);
-  --cstop_value     <= dInStop(2 downto 0);
+  --cstop_issued    <= dInStop(kIndexHit);
+  --cstop_value     <= dInStop(kIndexHit-1 downto 0);
   busyTdc         <= busy_tdc;
   busy_tdc        <= full_flag OR pgfull_flag OR busy_fifo OR full_block OR afull_block OR busy_process;
 
@@ -578,7 +578,7 @@ begin
     elsif(sysClk'event AND sysClk = '1') then
       id      := to_integer(unsigned(local_index));
 
-      din_block_buffer_buf  <= magicWord & '0' & tdc_ch & "00" & dout_chfifo(id)(kIndexDataBit-1 downto 0);
+      din_block_buffer_buf  <= magicWord & '0' & tdc_ch & '0' & dout_chfifo(id)(kIndexDataBit-1 downto 0); -- NOTE: according to the change in # of TDC bit, "00"->'0'
       din_block_buffer      <= din_block_buffer_buf;
       we_block_buffer_buf   <= we_ok_to_blbuffer AND read_valid(id);
       we_block_buffer       <= we_block_buffer_buf;

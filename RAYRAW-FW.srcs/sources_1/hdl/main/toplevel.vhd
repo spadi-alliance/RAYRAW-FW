@@ -645,7 +645,7 @@ begin
   u_YSC_Inst : entity mylib.YAENAMIController
     generic map  -- use generic parameters in SctDriver.vhd
     (
-      kFreqSysClk   => 125_000_000,
+      kFreqSysClk   => 100_000_000,
       kNumIO        => kNumIO,   -- # of MOSI lines: defined in defToplevel.vhd
       kNumASIC      => kNumASIC, -- # of ASICs; defined in defToplevel.vhd
       enDebug       => false
@@ -673,7 +673,7 @@ begin
   -- APD_BIAS -------------------------------------------------------------------------
   u_APD_Inst : entity mylib.MAX1932Controller
     generic map(
-      kSysClkFreq         => 125_000_000
+      kSysClkFreq         => 100_000_000
     )
     port map(
       rst	          => user_reset,
@@ -696,7 +696,7 @@ begin
   -- C6C -------------------------------------------------------------------------------
   u_C6C_Inst : entity mylib.CDCE62002Controller
     generic map(
-      kSysClkFreq         => 125_000_000,
+      kSysClkFreq         => 100_000_000,
       kIoStandard         => "LVDS"
     )
     port map(

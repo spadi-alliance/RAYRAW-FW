@@ -52,6 +52,7 @@ set_false_path -through [get_nets {u_IOM_Inst/reg_extL1[*]}]
 set_false_path -through [get_nets {u_IOM_Inst/reg_ext_busy[*]}]
 set_false_path -through [get_nets {u_IOM_Inst/reg_ext_rsv2[*]}]
 set_false_path -from [get_pins {u_IOM_Inst/reg_extL1_reg[*]/C}] -to [get_pins u_TDC_Inst/u_CStop/u_FirstFDC/FDCE_inst2/D]
+set_false_path -from [get_pins {u_IOM_Inst/reg_extL1_reg[*]/C}] -to [get_pins u_TDC_Inst/u_CStop/u_FirstFDC/FDCE_inst3/D]
 
 ## constraints for clk_wis_0
 
