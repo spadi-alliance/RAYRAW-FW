@@ -15,7 +15,7 @@ use mylib.defTdcBlock.all;
 
 entity FineCounterDecoder is
   port (
-    tdcClk          : in std_logic; -- 2*FreqSys
+    tdcClk          : in std_logic; -- 4*FreqSys (RAYRAW)
     sysClk          : in std_logic; -- FreqSys
 
     dIn             : in std_logic_vector(kNumTdcClock-1 downto 0);
@@ -29,9 +29,13 @@ end FineCounterDecoder;
 architecture RTL of FineCounterDecoder is
   signal stage0 : std_logic_vector(kNumTdcClock-1 downto 0);
   signal stage1 : std_logic_vector(kNumTdcClock-1 downto 0);
+  signal stage2 : std_logic_vector(kNumTdcClock-1 downto 0);
+  signal stage3 : std_logic_vector(kNumTdcClock-1 downto 0);
 
   signal synch_stage0 : std_logic_vector(kNumTdcClock-1 downto 0);
   signal synch_stage1 : std_logic_vector(kNumTdcClock-1 downto 0);
+  signal synch_stage2 : std_logic_vector(kNumTdcClock-1 downto 0);
+  signal synch_stage3 : std_logic_vector(kNumTdcClock-1 downto 0);
 
   signal previous_synch_stage0 : std_logic_vector(kNumTdcClock-1 downto 0);
 begin
@@ -41,6 +45,8 @@ begin
     if(tdcClk'event and tdcClk = '1') then
       stage0 <= dIn;
       stage1 <= stage0;
+      stage2 <= stage1;
+      stage3 <= stage2;
     end if;
   end process;
 
@@ -49,55 +55,91 @@ begin
     if(sysClk'event and sysClk = '1') then
       synch_stage0 <= stage0;
       synch_stage1 <= stage1;
+      synch_stage2 <= stage2;
+      synch_stage3 <= stage3;
       previous_synch_stage0 <= synch_stage0;
     end if;
   end process;
 
-  process(synch_stage0, synch_stage1, previous_synch_stage0)
+  process(synch_stage0, synch_stage1, synch_stage2, synch_stage3, previous_synch_stage0)
   begin
-    if(synch_stage1 = "1111") then
+    if(synch_stage3 = "1111") then
       case previous_synch_stage0 is
         when "0000" =>
-          fineCount(kWidthFineCount-2 downto 0) <= "11";
+          fineCount(kWidthFineCount-3 downto 0) <= "11";
         when "1000" =>
-          fineCount(kWidthFineCount-2 downto 0) <= "10";
+          fineCount(kWidthFineCount-3 downto 0) <= "10";
         when "1100" =>
-          fineCount(kWidthFineCount-2 downto 0) <= "01";
+          fineCount(kWidthFineCount-3 downto 0) <= "01";
         when "1110" =>
-          fineCount(kWidthFineCount-2 downto 0) <= "00";
+          fineCount(kWidthFineCount-3 downto 0) <= "00";
         when others =>
-          fineCount(kWidthFineCount-2 downto 0) <= (others => 'X');
+          fineCount(kWidthFineCount-3 downto 0) <= (others => 'X');
       end case;
-    else
-      case synch_stage1 is
+    elsif(synch_stage2 = "1111") then
+      case synch_stage3 is 
         when "0000" =>
-          fineCount(kWidthFineCount-2 downto 0) <= "11";
+          fineCount(kWidthFineCount-3 downto 0) <= "11";
         when "1000" =>
-          fineCount(kWidthFineCount-2 downto 0) <= "10";
+          fineCount(kWidthFineCount-3 downto 0) <= "10";
         when "1100" =>
-          fineCount(kWidthFineCount-2 downto 0) <= "01";
+          fineCount(kWidthFineCount-3 downto 0) <= "01";
         when "1110" =>
-          fineCount(kWidthFineCount-2 downto 0) <= "00";
+          fineCount(kWidthFineCount-3 downto 0) <= "00";
         when others =>
-          fineCount(kWidthFineCount-2 downto 0) <= (others => 'X');
+          fineCount(kWidthFineCount-3 downto 0) <= (others => 'X');
+      end case;
+    elsif(synch_stage1 = "1111") then
+      case synch_stage2 is 
+        when "0000" =>
+          fineCount(kWidthFineCount-3 downto 0) <= "11";
+        when "1000" =>
+          fineCount(kWidthFineCount-3 downto 0) <= "10";
+        when "1100" =>
+          fineCount(kWidthFineCount-3 downto 0) <= "01";
+        when "1110" =>
+          fineCount(kWidthFineCount-3 downto 0) <= "00";
+        when others =>
+          fineCount(kWidthFineCount-3 downto 0) <= (others => 'X');
+      end case;
+    elsif(synch_stage0 = "1111") then
+      case synch_stage1 is 
+        when "0000" =>
+          fineCount(kWidthFineCount-3 downto 0) <= "11";
+        when "1000" =>
+          fineCount(kWidthFineCount-3 downto 0) <= "10";
+        when "1100" =>
+          fineCount(kWidthFineCount-3 downto 0) <= "01";
+        when "1110" =>
+          fineCount(kWidthFineCount-3 downto 0) <= "00";
+        when others =>
+          fineCount(kWidthFineCount-3 downto 0) <= (others => 'X');
       end case;
     end if;
   end process;
 
-  process(synch_stage1)
+  process(synch_stage1, synch_stage2, synch_stage3)
   begin
-    if(synch_stage1 = "1111") then
-      fineCount(kWidthFineCount-1) <= '0';
+    if(synch_stage3 = "1111") then
+      fineCount(kWidthFineCount-1 downto kWidthFineCount-2) <= "00";
+    elsif(synch_stage2 = "1111") then
+      fineCount(kWidthFineCount-1 downto kWidthFineCount-2) <= "01";
+    elsif(synch_stage1 = "1111") then
+      fineCount(kWidthFineCount-1 downto kWidthFineCount-2) <= "10";
     else
-      fineCount(kWidthFineCount-1) <= '1';
+      fineCount(kWidthFineCount-1 downto kWidthFineCount-2) <= "11";
     end if;
   end process;
 
-  process(synch_stage0, synch_stage1, previous_synch_stage0)
+  process(synch_stage0, synch_stage1, synch_stage2, synch_stage3, previous_synch_stage0)
   begin
     if(synch_stage0 = "1111" and synch_stage1 /= "1111") then
       hitFound <= '1';
-    elsif(synch_stage1 = "1111" and previous_synch_stage0 /= "1111") then
+    elsif(synch_stage1 = "1111" and synch_stage2 /= "1111") then
+      hitFound <= '1';
+    elsif(synch_stage2 = "1111" and synch_stage3 /= "1111") then
+      hitFound <= '1';
+    elsif(synch_stage3 = "1111" and previous_synch_stage0 /= "1111") then
       hitFound <= '1';
     else
       hitFound <= '0';

@@ -12,12 +12,12 @@ use mylib.defCommonStopBlock.all;
 
 entity CommonStopBlock is
   port(
-    sysClk      : in std_logic; -- 150 MHz
-    tdcClk      : in std_logic_vector(kNumTdcClock-1 downto 0); -- 300 MHz
+    sysClk      : in std_logic; -- 100 MHz
+    tdcClk      : in std_logic_vector(kNumTdcClock-1 downto 0); -- 400 MHz
 
     -- data input --
     stopIn      : in std_logic;
-    dOutStop    : out std_logic_vector(kWidthStopData-1 downto 0) -- 3:CStop bit, 2-0: CStop values
+    dOutStop    : out std_logic_vector(kWidthStopData-1 downto 0) -- 4:CStop bit, 3-0: CStop values
     );
 end CommonStopBlock;
 
