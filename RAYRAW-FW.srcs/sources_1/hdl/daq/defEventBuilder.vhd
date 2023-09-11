@@ -6,12 +6,12 @@ use mylib.defMTDC.all;
 
 package defEVB is
   -- Definition of DAQ data
-  constant kWidthDaqWord      : positive:= 32;
-  constant kWidthEventSize    : positive:= 13;
-  constant kWidthSelfCounter  : positive:= 16;
+  constant kWidthDaqWord      : integer:= 32;
+  constant kWidthEventSize    : integer:= 18;
+  constant kWidthSelfCounter  : integer:= 16;
 
   -- Data structure of HUL HRM
-  -- Header1  : Eigen word:  0xffff30cc (See defBCT)
+  -- Header1  : Eigen word:  0xffffxxxx (See defBCT)
   -- Header2  : Data size
   -- Header3  : Event number
   -- Data
@@ -31,7 +31,7 @@ package defEVB is
   end record;
 
   -- Builder bus definition --
-  constant kNumBuilderBlock   : positive:= 2;
+  constant kNumBuilderBlock   : integer:= 2;
   -- TDC-L: 1
   -- TDC-T: 1
 
@@ -45,8 +45,8 @@ package defEVB is
   constant kBbTDCT0 : DaqBlock := (ID => 1);
   constant kBbDummy : DaqBlock := (ID => -1);
 
-  constant kWidthBBusAddr   : positive:= 4;
-  constant kWidthBBusData   : positive:= 32;
+  constant kWidthBBusAddr   : integer:= 4;
+  constant kWidthBBusData   : integer:= 32;
 
   subtype BBusAddressType is std_logic_vector(kWidthBBusAddr-1 downto 0);
   subtype BBusDataType    is std_logic_vector(kWidthBBusData-1 downto 0);
@@ -58,6 +58,10 @@ package defEVB is
   -- Builder bus address --
   constant kEventSummary  : BBusAddressType:= X"1";
   constant kDataBuffer    : BBusAddressType:= X"2";
+
+  -- EventSummary data structure --
+  --  Overflow bit + data size (kWidthEventSize-1 downto 0);
+  constant kWidthEvtSummary : integer:= kWidthEventSize +1; -- Overflow bit + NWord
 
   type BBusMasterType is
     (

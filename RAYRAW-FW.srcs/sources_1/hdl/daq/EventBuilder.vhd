@@ -5,7 +5,7 @@ use ieee.std_logic_misc.all;
 
 use mylib.defTRM.all;
 use mylib.defEVB.all;
-use mylib.defTdcBlock.all;
+--use mylib.defTdcBlock.all;
 use mylib.defSiTCP.all;
 
 entity EventBuilder is
@@ -78,6 +78,10 @@ architecture RTL of EventBuilder is
   signal we_evbuf             : std_logic;
   signal din_evbuf            : std_logic_vector(kWidthDaqWord-1 downto 0);
   signal din_evbuf_swap       : std_logic_vector(kWidthDaqWord-1 downto 0);
+  signal dout_sub_evbuf       : std_logic_vector(kWidthDaqWord-1 downto 0);
+
+  signal re_from_evbbuf       : std_logic;
+  signal valid_to_evbbuf      : std_logic;
 
   -- Event Building process --
   signal state_evb            : EvbProcessType;
@@ -104,6 +108,23 @@ architecture RTL of EventBuilder is
   signal read_count       : std_logic_vector(kWidthEventSize-1 downto 0);
   signal recv_count       : std_logic_vector(kWidthEventSize-1 downto 0);
   signal index_bbus       : BlockID;
+
+  signal pgfull_sub_evbuf     : std_logic;
+
+  COMPONENT sub_event_buffer
+    PORT (
+      clk : IN STD_LOGIC;
+      srst : IN STD_LOGIC;
+      din : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+      wr_en : IN STD_LOGIC;
+      rd_en : IN STD_LOGIC;
+      dout : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+      full : OUT STD_LOGIC;
+      empty : OUT STD_LOGIC;
+      valid : OUT STD_LOGIC;
+      prog_full : OUT STD_LOGIC
+    );
+  END COMPONENT;
 
   signal pgfull_evbuf     : std_logic;
   COMPONENT event_buffer
@@ -231,7 +252,7 @@ begin
           state_evb             <= WaitDready;
 
         when WaitDready =>
-          if(data_ready = '1' AND trig_ready = '1' AND pgfull_evbuf = '0') then
+          if(data_ready = '1' AND trig_ready = '1' AND pgfull_sub_evbuf = '0') then
             --if(data_ready = '1' AND pgfull_evbuf = '0') then
             out_trm.reFifo      <= '1';
             bbus_dest           <= kBbTDCL0.ID;
@@ -259,8 +280,8 @@ begin
         when ReadBlockSize =>
           req_bbus_cycle      <= '0';
           if(rv_bbus(bbus_dest) = '1') then
-            reg_block_size(bbus_dest)  <= std_logic_vector(to_unsigned(0, kWidthEventSize- kWidthNWord)) & din_bbus(bbus_dest)(kWidthNWord-1 downto 0);
-            reg_block_overflow(bbus_dest)   <= din_bbus(bbus_dest)(kIndexOverflow);
+            reg_block_size(bbus_dest)       <= din_bbus(bbus_dest)(kWidthEventSize-1 downto 0);
+            reg_block_overflow(bbus_dest)   <= din_bbus(bbus_dest)(kWidthEventSize); -- This bit is defined as overflow bit.
           end if;
 
           if(ack_bbus_cycle = '1') then
@@ -290,7 +311,7 @@ begin
 
         when SendHeader2  =>
           we_evbuf            <= '1' AND reg_level2;
-          din_evbuf           <= X"ff00" & reg_event_overflow & "00" & reg_event_size;
+          din_evbuf           <= X"ff0" & '0' & reg_event_overflow & reg_event_size;
           state_evb           <= SendHeader3;
 
         when SendHeader3 =>
@@ -429,13 +450,30 @@ begin
 
 
   din_evbuf_swap  <= din_evbuf(7 downto 0) & din_evbuf(15 downto 8) & din_evbuf(23 downto 16) & din_evbuf(31 downto 24);
+
+  u_SubEvbBuf : sub_event_buffer
+    port map (
+      clk     => clk,
+      srst    => sync_reset,
+      din     => din_evbuf_swap,
+      wr_en   => we_evbuf,
+      rd_en   => re_from_evbbuf,
+      dout    => dout_sub_evbuf,
+      full    => open,
+      empty   => open,
+      valid   => valid_to_evbbuf,
+      prog_full   => pgfull_sub_evbuf
+    );
+
+  re_from_evbbuf  <= not pgfull_evbuf;
+
   u_EvbBuf : event_buffer
     port map(
       rst         => sync_reset,
       wr_clk      => clk,
       rd_clk      => clkLink,
-      din         => din_evbuf_swap,
-      wr_en       => we_evbuf,
+      din         => dout_sub_evbuf,
+      wr_en       => valid_to_evbbuf,
       rd_en       => reFromTSD,
       dout        => rdToTSD,
       full        => open,

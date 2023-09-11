@@ -65,7 +65,7 @@ package defTdcBlock is
   constant kMaxMultiHit     : positive:= 16;
   constant kWidthChIndex    : positive:= 5;
   constant kWidthNWord      : positive:= 10;
-  constant kWidthEvSumTDC   : positive:= kWidthNWord + 1; -- overflowbit + Nword(10bit)
+  --constant kWidthEvSumTDC   : positive:= kWidthNWord + 1; -- overflowbit + Nword(10bit)
   constant kIndexOverflow   : positive:= 10;
 
   -- Control register --

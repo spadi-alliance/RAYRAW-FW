@@ -203,8 +203,8 @@ architecture RTL of TdcBlock is
   END COMPONENT;
 
   -- Event Summary FIFO ------------------------------------------------------
-  signal din_evsum    : std_logic_vector(kWidthEvSumTDC-1 downto 0); -- overflow(10) : n_word(9-0)
-  signal dout_evsum   : std_logic_vector(kWidthEvSumTDC-1 downto 0); -- overflow(10) : n_word(9-0)
+  signal din_evsum    : std_logic_vector(kWidthEvtSummary-1 downto 0); -- overflow(10) : n_word(9-0)
+  signal dout_evsum   : std_logic_vector(kWidthEvtSummary-1 downto 0); -- overflow(10) : n_word(9-0)
   signal we_evsum     : std_logic;
   signal re_evsum     : std_logic;
   signal full_block, afull_block  : std_logic;
@@ -217,10 +217,10 @@ architecture RTL of TdcBlock is
     PORT (
       clk         : IN STD_LOGIC;
       rst         : IN STD_LOGIC;
-      din         : IN STD_LOGIC_VECTOR(kWidthEvSumTDC-1 DOWNTO 0);
+      din         : IN STD_LOGIC_VECTOR(kWidthEvtSummary-1 DOWNTO 0);
       wr_en       : IN STD_LOGIC;
       rd_en       : IN STD_LOGIC;
-      dout        : OUT STD_LOGIC_VECTOR(kWidthEvSumTDC-1 DOWNTO 0);
+      dout        : OUT STD_LOGIC_VECTOR(kWidthEvtSummary-1 DOWNTO 0);
       full        : OUT STD_LOGIC;
       almost_full : OUT STD_LOGIC;
       empty       : OUT STD_LOGIC;
@@ -448,7 +448,7 @@ begin
       );
 
   -- Instance of Event Summary ----------------------------------------------
-  din_evsum   <= overflow_flag & n_of_word;
+  din_evsum   <= overflow_flag & std_logic_vector(to_unsigned(0, kWidthEventSize- kWidthNWord)) & n_of_word;
 
   u_evsum : evsummary_fifo
     port map (
@@ -695,7 +695,7 @@ begin
             when kEventSummary =>
               re_evsum        <= re_bbus;
               re_block_buffer <= '0';
-              dout_bbus       <= std_logic_vector(to_unsigned(0, kWidthBBusData-kWidthEvSumTDC)) & dout_evsum;
+              dout_bbus       <= std_logic_vector(to_unsigned(0, kWidthBBusData-kWidthEvtSummary)) & dout_evsum;
               rv_bbus         <= rv_evsum;
             when kDataBuffer =>
               re_evsum        <= '0';
