@@ -95,7 +95,7 @@ begin
       if(reset = '1') then
         busy_tx       <= '0';
         fifo_read_gate  <= '0';
-        ssb_out       <= '0';
+        ssb_out       <= '1';
         state_tx      <= Init;
       else
         case state_tx is
@@ -112,7 +112,7 @@ begin
             fifo_read_gate  <= '1';
 
             if(edge_tx_ack = "01") then
-              ssb_out         <= '1';
+              ssb_out         <= '0';
               if(fifo_empty = '1') then
                 fifo_read_gate  <= '0';
                 state_tx        <= WaitLastFrame;
@@ -126,7 +126,7 @@ begin
 
           when Done =>
             if(edge_tx_beat = "10") then
-              ssb_out   <= '0';
+              ssb_out   <= '1';
               busy_tx   <= '0';
               state_tx  <= Init;
             end if;

@@ -11,6 +11,8 @@ use mylib.defToplevel.all;
 use mylib.defTRM.all;
 use mylib.defTdcBlock.all;
 use mylib.defMTDC.all;
+use mylib.defYaenamiAdc.all;
+use mylib.defRayrawAdcROV1.all;
 use mylib.defYAENAMIController.all; -- Slow Control
 use mylib.defMAX.all; -- APD_BIAS
 use mylib.defC6C.all;
@@ -77,7 +79,7 @@ entity toplevel is
     -- CDCM_TX_N           : out std_logic;
 
     -- ASIC -----------------------------------------------------------------
-    -- ASIC_REFC           : out std_logic_vector(3 downto 0);
+    ASIC_REFC           : out std_logic_vector(3 downto 0);
     ASIC_SSB            : out std_logic_vector(3 downto 0);
     ASIC_SCK            : out std_logic;
     ASIC_MOSI           : out std_logic;
@@ -86,7 +88,7 @@ entity toplevel is
     ASIC_DISCRI         : in std_logic_vector(31 downto 0);
 
     -- TRIGGER_OUT ----------------------------------------------------------
-    -- TRIG_O              : out std_logic_vector(31 downto 0);
+    TRIG_O              : out std_logic_vector(31 downto 0);
 
     -- APD_BIAS -------------------------------------------------------------
     CP_CS_B             : out std_logic;
@@ -203,6 +205,20 @@ architecture Behavioral of toplevel is
   signal sig_in_tdc     : arrayInput;
   signal tdc_busy       : std_logic;
   signal data_tdc_bbus  : BBusDataTDC;
+
+  -- ADC ----------------------------------------------------------------------------------
+  signal adc_block_reset  : std_logic_vector(0 downto 0);
+  signal tap_value_in     : std_logic_vector(kNumTapBit-1 downto 0);
+  signal clk_adc          : std_logic_vector(kNumASIC-1 downto 0);
+  signal gclk_adc         : std_logic_vector(kNumASIC-1 downto 0);
+
+  COMPONENT vio_adc
+  PORT (
+    clk : IN STD_LOGIC;
+    probe_out0 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
+    probe_out1 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0)
+  );
+  END COMPONENT;
 
   -- IOM ----------------------------------------------------------------------------------
   signal ext_L1           : std_logic;
@@ -454,53 +470,22 @@ begin
   dip_sw(6)   <= DIP(6);
   dip_sw(7)   <= DIP(7);
 
-  NIM_OUT(1)  <= trigger_out.L1accept;
-  NIM_OUT(2)  <= dummy_signal;
+  NIM_OUT(1)  <= clk_sys;
+  NIM_OUT(2)  <= '0';
+--  NIM_OUT(2)  <= gclk_adc(0) when (DIP(7 downto 6) = "00") else
+--                 gclk_adc(1) when (DIP(7 downto 6) = "01") else
+--                 gclk_adc(2) when (DIP(7 downto 6) = "10") else
+--                 gclk_adc(3) when (DIP(7 downto 6) = "11") else gclk_adc(0);
+
+  ASIC_REFC <= (clk_sys & clk_sys & clk_sys & clk_sys);
 
   dummy_signal  <= or_reduce(asic_adc_data) or or_reduce(asic_adc_fco) or or_reduce(asic_adc_dco);
 
-  -- Temp IO --
-  gen_adc_d : for i in 0 to 31 generate
-  begin
-    u_ibufds_d : IBUFDS
-      generic map (
-        DIFF_TERM => true, -- Differential Termination
-        IBUF_LOW_PWR => true, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
-        IOSTANDARD => "LVDS")
-      port map (
-        O  => asic_adc_data(i),  -- Buffer output
-        I  => ADC_DATA_P(i),  -- Diff_p buffer input (connect directly to top-level port)
-        IB => ADC_DATA_N(i) -- Diff_n buffer input (connect directly to top-level port)
-      );
-  end generate;
 
-  gen_adc_fc : for i in 0 to 3 generate
-  begin
-    u_ibufds_f : IBUFDS
-      generic map (
-        DIFF_TERM => true, -- Differential Termination
-        IBUF_LOW_PWR => true, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
-        IOSTANDARD => "LVDS")
-      port map (
-        O  => asic_adc_fco(i),  -- Buffer output
-        I  => ADC_DFRAME_P(i),  -- Diff_p buffer input (connect directly to top-level port)
-        IB => ADC_DFRAME_N(i) -- Diff_n buffer input (connect directly to top-level port)
-      );
 
-    u_ibufds_c : IBUFDS
-      generic map (
-        DIFF_TERM => true, -- Differential Termination
-        IBUF_LOW_PWR => true, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
-        IOSTANDARD => "LVDS")
-      port map (
-        O  => asic_adc_dco(i),  -- Buffer output
-        I  => ADC_DCLK_P(i),  -- Diff_p buffer input (connect directly to top-level port)
-        IB => ADC_DCLK_N(i) -- Diff_n buffer input (connect directly to top-level port)
-      );
-  end generate;
-
-  -- Fixed input ports -------------------------------------------------------
+  -- Fixed IO ports --------------------------------------------------------------------
   asic_discri_input  <= ASIC_DISCRI;
+  TRIG_O             <= ASIC_DISCRI;
 
   -- TRM -------------------------------------------------------------------------------
   -- LED <= clk_locked_sys & clk_locked_cdcm & module_busy &  tcp_isActive;
@@ -609,6 +594,50 @@ begin
       weLocalBus          => we_LocalBus(kTDC.ID),
       readyLocalBus       => ready_LocalBus(kTDC.ID)
       );
+
+  -- ADC -------------------------------------------------------------------------------
+  u_VIO : vio_adc
+    PORT MAP (
+      clk => clk_sys,
+      probe_out0 => adc_block_reset,
+      probe_out1 => tap_value_in
+    );
+
+
+  u_ADC : entity mylib.RawrayAdcRO
+    generic map
+    (
+      enDEBUG       => TRUE
+    )
+    port map
+    (
+      -- SYSTEM port --
+      rst           => adc_block_reset(0),
+      clkSys        => clk_sys,
+      clkIdelayRef  => clk_indep,
+      tapValueIn    => tap_value_in,
+      enBitslip     => '1',
+      frameRefPatt  => "1100000000",
+
+      -- Status --
+      isReady       => open,
+      bitslipErr    => open,
+      clkAdc        => open,
+
+      -- Data Out --
+      validOut      => open,
+      adcDataOut    => open,
+      adcFrameOut   => open,
+
+      -- ADC In --
+      adcDClkP      => ADC_DCLK_P,
+      adcDClkN      => ADC_DCLK_N,
+      adcDataP      => ADC_DATA_P,
+      adcDataN      => ADC_DATA_N,
+      adcFrameP     => ADC_DFRAME_P,
+      adcFrameN     => ADC_DFRAME_N
+
+    );
 
   -- IOM -------------------------------------------------------------------------------
   u_IOM_Inst : entity mylib.IOManager
