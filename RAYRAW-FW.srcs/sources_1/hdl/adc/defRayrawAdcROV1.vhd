@@ -18,6 +18,8 @@ package defRayrawAdcROV1 is
   function GetGenFlagIdelayCtrl(index : integer) return boolean;
   function GetIdelayGroup(index : integer) return string;
 
+  function GetTapValues(index : integer) return TapArray;
+
 
 end package defRayrawAdcROV1;
 -- ----------------------------------------------------------------------------------
@@ -63,6 +65,21 @@ package body defRayrawAdcROV1 is
     end if;
 
   end GetIdelayGroup;
+
+-- GetTapValues ---------------------------------------------------------------------
+  function GetTapValues(index : integer) return TapArray is
+  begin
+    if (index = 0)  then
+      return("00011", "00001", "00001", "00001", "00001", "00001", "00001", "00001", "00001");
+    elsif (index = 1)  then
+      return("00011", "00001", "00001", "00001", "00001", "00001", "00001", "00001", "00001");
+    elsif (index = 2)  then
+      return("00011", "00001", "00001", "00001", "00001", "00001", "00001", "00001", "00001");
+    else
+      return("00011", "00001", "00001", "00001", "00001", "00001", "00001", "00001", "00001");
+    end if;
+
+  end GetTapValues;
 
 
 end package body defRayrawAdcROV1;

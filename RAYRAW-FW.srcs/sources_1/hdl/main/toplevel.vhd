@@ -623,6 +623,7 @@ begin
       clkIdelayRef  => clk_indep,
       tapValueIn    => tap_value_in,
       tapValueFrameIn    => tap_value_frame_in,
+      enExtTapIn    => '1',
       enBitslip     => en_bitslip(0),
       frameRefPatt  => "1100000000",
 
@@ -681,7 +682,7 @@ begin
   u_YSC_Inst : entity mylib.YAENAMIController
     generic map  -- use generic parameters in SctDriver.vhd
     (
-      kFreqSysClk   => 100_000_000,
+      kFreqSysClk   => 75_000_000,
       kNumIO        => kNumIO,   -- # of MOSI lines: defined in defToplevel.vhd
       kNumASIC      => kNumASIC, -- # of ASICs; defined in defToplevel.vhd
       enDebug       => false
