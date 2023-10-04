@@ -209,7 +209,8 @@ begin
 
   u_swap : for i in 0 to kDevW-1 generate
     begin
-      rx_output(i)   <= invPolarity xor iserdes_q(kDevW-i-1);
+      --rx_output(i)   <= invPolarity xor iserdes_q(kDevW-i-1);
+      rx_output(i)   <= invPolarity xor iserdes_q(i);
   end generate;
 
   dOutToDevice  <= rx_output;

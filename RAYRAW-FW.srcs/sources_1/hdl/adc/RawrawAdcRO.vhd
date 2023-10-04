@@ -20,7 +20,8 @@ entity RawrayAdcRO is
     rst           : in std_logic; -- Asynchronous reset (active high)
     clkSys        : in std_logic; -- System clock (global clock)
     clkIdelayRef  : in std_logic; -- 200 MHz ref. clock.
-    tapValueIn    : in TapType;   -- External TAP value input (for tap value scan)
+    tapValueIn    : in TapType;   -- External TAP value input (for data)
+    tapValueFrameIn    : in TapType;   -- External TAP value input (for frame)
     enBitslip     : in std_logic; -- Enablle bitslip sequence
     frameRefPatt  : in AdcDataType; -- ADC FRAME reference bit pattern
 
@@ -123,6 +124,8 @@ begin
   begin
 
     adc_frame_block_out(i)  <= dout_fifo(i)(kNumAdcBit*(kNumAdcCh+kNumFrame)-1 downto kNumAdcBit*(kNumAdcCh+kNumFrame)-kNumAdcBit);
+    tap_value_in(i)(8)      <= tapValueFrameIn;
+
     gen_ch : for j in 0 to kNumAdcCh-1 generate
       adc_data_block_out(kNumAdcCh*i +j)   <= dout_fifo(i)(kNumAdcBit*(i+1)-1 downto kNumAdcBit*i);
       tap_value_in(i)(j)                   <= tapValueIn;
