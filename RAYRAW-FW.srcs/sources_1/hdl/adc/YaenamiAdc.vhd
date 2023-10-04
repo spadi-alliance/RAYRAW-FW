@@ -180,7 +180,11 @@ begin
         RST     => rst
       );
 
-    rst_all  <= rst or (not ready_ctrl);
+      rst_all  <= rst or (not ready_ctrl);
+  end generate;
+
+  ungen_idelayctrl : if genIDELAYCTRL = FALSE generate
+    rst_all  <= rst;
   end generate;
 
   gen_serdes : for i in 0 to kNumAdcCh+kNumFrame-1 generate
@@ -227,7 +231,7 @@ begin
   begin
     if(clk_slow'event and clk_slow = '1') then
       for i in 0 to kNumAdcCh-1 loop
-        reg_adc_data(i) <= dout_serdes(i);
+        reg_adc_data(i) <= "1000000000" xor dout_serdes(i);
       end loop;
 
       reg_adc_frame <= dout_serdes(kNumAdcCh);

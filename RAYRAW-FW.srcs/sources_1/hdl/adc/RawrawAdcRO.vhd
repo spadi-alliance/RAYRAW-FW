@@ -20,7 +20,9 @@ entity RawrayAdcRO is
     rst           : in std_logic; -- Asynchronous reset (active high)
     clkSys        : in std_logic; -- System clock (global clock)
     clkIdelayRef  : in std_logic; -- 200 MHz ref. clock.
-    tapValueIn    : in TapType;   -- External TAP value input (for tap value scan)
+    tapValueIn    : in TapType;   -- External TAP value input (for data)
+    tapValueFrameIn    : in TapType;   -- External TAP value input (for frame)
+    enExtTapIn    : in std_logic; -- Activate tapValueIn and tapValueFraneIn
     enBitslip     : in std_logic; -- Enablle bitslip sequence
     frameRefPatt  : in AdcDataType; -- ADC FRAME reference bit pattern
 
@@ -87,6 +89,7 @@ architecture RTL of RawrayAdcRO is
   signal dout_fifo                : AdcFifoType;
 
   signal tap_value_in         : TapBlockArray;
+  signal tap_values           : TapBlockArray;
 
   attribute mark_debug        : boolean;
   attribute mark_debug of is_ready       : signal is enDEBUG;
@@ -109,6 +112,7 @@ begin
   adcDataOut  <= adc_data_block_out;
   adcFrameOut <= adc_frame_block_out;
 
+
   -- Clock domain crossing ----------------------------------------------------------
   u_adc_to_sys : process(clkSys)
   begin
@@ -122,7 +126,11 @@ begin
   gen_adc : for i in 0 to kNumAsicBlock-1 generate
   begin
 
+    tap_values(i)  <= tap_value_in(i) when(enExtTapIn = '1') else GetTapValues(i);
+
     adc_frame_block_out(i)  <= dout_fifo(i)(kNumAdcBit*(kNumAdcCh+kNumFrame)-1 downto kNumAdcBit*(kNumAdcCh+kNumFrame)-kNumAdcBit);
+    tap_value_in(i)(8)      <= tapValueFrameIn;
+
     gen_ch : for j in 0 to kNumAdcCh-1 generate
       adc_data_block_out(kNumAdcCh*i +j)   <= dout_fifo(i)(kNumAdcBit*(i+1)-1 downto kNumAdcBit*i);
       tap_value_in(i)(j)                   <= tapValueIn;
@@ -144,7 +152,7 @@ begin
         rst           => rst,
         invPolarity   => GetInvPolarity(i),
         clkIdelayRef  => clkIdelayRef,
-        tapValueIn    => tap_value_in(i),
+        tapValueIn    => tap_values(i),
         tapValueOut   => open,
         enBitslip     => enBitslip,
         frameRefPatt  => frameRefPatt,

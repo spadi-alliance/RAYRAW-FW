@@ -209,6 +209,8 @@ architecture Behavioral of toplevel is
   -- ADC ----------------------------------------------------------------------------------
   signal adc_block_reset  : std_logic_vector(0 downto 0);
   signal tap_value_in     : std_logic_vector(kNumTapBit-1 downto 0);
+  signal tap_value_frame_in     : std_logic_vector(kNumTapBit-1 downto 0);
+  signal en_bitslip       : std_logic_vector(0 downto 0);
   signal clk_adc          : std_logic_vector(kNumASIC-1 downto 0);
   signal gclk_adc         : std_logic_vector(kNumASIC-1 downto 0);
 
@@ -216,7 +218,9 @@ architecture Behavioral of toplevel is
   PORT (
     clk : IN STD_LOGIC;
     probe_out0 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe_out1 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0)
+    probe_out1 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+    probe_out2 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+    probe_out3 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0)
   );
   END COMPONENT;
 
@@ -600,7 +604,9 @@ begin
     PORT MAP (
       clk => clk_sys,
       probe_out0 => adc_block_reset,
-      probe_out1 => tap_value_in
+      probe_out1 => tap_value_in,
+      probe_out2 => tap_value_frame_in,
+      probe_out3 => en_bitslip
     );
 
 
@@ -616,7 +622,9 @@ begin
       clkSys        => clk_sys,
       clkIdelayRef  => clk_indep,
       tapValueIn    => tap_value_in,
-      enBitslip     => '1',
+      tapValueFrameIn    => tap_value_frame_in,
+      enExtTapIn    => '1',
+      enBitslip     => en_bitslip(0),
       frameRefPatt  => "1100000000",
 
       -- Status --
@@ -674,7 +682,7 @@ begin
   u_YSC_Inst : entity mylib.YAENAMIController
     generic map  -- use generic parameters in SctDriver.vhd
     (
-      kFreqSysClk   => 100_000_000,
+      kFreqSysClk   => 75_000_000,
       kNumIO        => kNumIO,   -- # of MOSI lines: defined in defToplevel.vhd
       kNumASIC      => kNumASIC, -- # of ASICs; defined in defToplevel.vhd
       enDebug       => false
