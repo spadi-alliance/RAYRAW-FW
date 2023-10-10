@@ -206,23 +206,12 @@ architecture Behavioral of toplevel is
   signal tdc_busy       : std_logic;
   signal data_tdc_bbus  : BBusDataTDC;
 
-  -- ADC ----------------------------------------------------------------------------------
-  signal adc_block_reset  : std_logic_vector(0 downto 0);
-  signal tap_value_in     : std_logic_vector(kNumTapBit-1 downto 0);
-  signal tap_value_frame_in     : std_logic_vector(kNumTapBit-1 downto 0);
-  signal en_bitslip       : std_logic_vector(0 downto 0);
-  signal clk_adc          : std_logic_vector(kNumASIC-1 downto 0);
+  -- ADC ---------------------------------------------------------------------
+  signal reg_from_tdc     : regTdc;
+  signal adc_busy         : std_logic;
+  signal data_adc_bbus    : BBusDataType;
   signal gclk_adc         : std_logic_vector(kNumASIC-1 downto 0);
-
-  COMPONENT vio_adc
-  PORT (
-    clk : IN STD_LOGIC;
-    probe_out0 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe_out1 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-    probe_out2 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-    probe_out3 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0)
-  );
-  END COMPONENT;
+  signal c_stop           : std_logic;
 
   -- IOM ----------------------------------------------------------------------------------
   signal ext_L1           : std_logic;
@@ -495,7 +484,7 @@ begin
   -- LED <= clk_locked_sys & clk_locked_cdcm & module_busy &  tcp_isActive;
   LED <= CDCE_LOCK & clk_locked_cdcm & module_busy &  tcp_isActive;
 
-  seq_busy   <= tdc_busy;-- OR dip_sw(kFBUSY.Index);
+  seq_busy   <= tdc_busy OR adc_busy; -- OR dip_sw(kFBUSY.Index);
 
   u_TRM_Inst :  entity mylib.TriggerManager
     port map(
@@ -580,6 +569,8 @@ begin
 
       -- Module output --
       busyTdc     => tdc_busy,
+      regOut      => reg_from_tdc,
+      cStop       => c_stop,
 
       -- Builder bus --
       addrBuilderBus      => addr_bbus,
@@ -600,52 +591,37 @@ begin
       );
 
   -- ADC -------------------------------------------------------------------------------
-  u_VIO : vio_adc
-    PORT MAP (
-      clk => clk_sys,
-      probe_out0 => adc_block_reset,
-      probe_out1 => tap_value_in,
-      probe_out2 => tap_value_frame_in,
-      probe_out3 => en_bitslip
-    );
+  data_bbus(kBbADC.ID) <= data_adc_bbus;
 
-
-  u_ADC : entity mylib.RawrayAdcRO
-    generic map
-    (
-      enDEBUG       => TRUE
-    )
-    port map
-    (
-      -- SYSTEM port --
-      rst           => adc_block_reset(0),
+  u_ADC_Inst : entity mylib.AdcBlock
+    port map(
+      rst           => user_reset,
       clkSys        => clk_sys,
       clkIdelayRef  => clk_indep,
-      tapValueIn    => tap_value_in,
-      tapValueFrameIn    => tap_value_frame_in,
-      enExtTapIn    => '1',
-      enBitslip     => en_bitslip(0),
-      frameRefPatt  => "1100000000",
+      clkAdc        => open, -- gclk_adc
 
-      -- Status --
-      isReady       => open,
-      bitslipErr    => open,
-      clkAdc        => open,
+      -- Module input --
+      regIn         => reg_from_tdc, -- TODO
+      ADC_DATA_P    => ADC_DATA_P,
+      ADC_DATA_N    => ADC_DATA_N,
+      ADC_DFRAME_P  => ADC_DFRAME_P,
+      ADC_DFRAME_N  => ADC_DFRAME_N,
+      ADC_DCLK_P    => ADC_DCLK_P,
+      ADC_DCLK_N    => ADC_DCLK_N,
+      cStop         => c_stop,
 
-      -- Data Out --
-      validOut      => open,
-      adcDataOut    => open,
-      adcFrameOut   => open,
+      -- Modle output --
+      busyAdc => adc_busy,
 
-      -- ADC In --
-      adcDClkP      => ADC_DCLK_P,
-      adcDClkN      => ADC_DCLK_N,
-      adcDataP      => ADC_DATA_P,
-      adcDataN      => ADC_DATA_N,
-      adcFrameP     => ADC_DFRAME_P,
-      adcFrameN     => ADC_DFRAME_N
-
-    );
+      -- Builder bus -- TODO: change later
+      addrBuilderBus      => addr_bbus,
+      dataBuilderBusOut   => data_adc_bbus,
+      reBuilderBus        => re_bbus(kBbADC.ID),
+      rvBuilderBus        => rv_bbus(kBbADC.ID),
+      dReadyBuilderBus    => dready_bbus(kBbADC.ID),
+      bindBuilderBus      => bind_bbus(kBbADC.ID),
+      isBoundToBuilder    => isbound_to_builder(kBbADC.ID)
+      );
 
   -- IOM -------------------------------------------------------------------------------
   u_IOM_Inst : entity mylib.IOManager
