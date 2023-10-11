@@ -24,6 +24,8 @@ entity MTDC is
 
     -- Module output --
     busyTdc             : out std_logic;
+    regOut              : out regTdc;
+    cStop               : out std_logic;
 
     -- Builder bus --
     addrBuilderBus      : in  BBusAddressType;
@@ -77,6 +79,8 @@ begin
   en_block(1) <= enable_block(1);
 
   busyTdc <= '0' when (unsigned(busy) = 0) else '1';
+  regOut  <= reg_tdc; 
+  cStop   <= sig_cstop(kWidthStopData-1);
 
   gen_traling : for i in 0 to kNumInputBlock-1 generate
     sig_in_n(0)(i)    <= NOT sigIn(0)(i);
