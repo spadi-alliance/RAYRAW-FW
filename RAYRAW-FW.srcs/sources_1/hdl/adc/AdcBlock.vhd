@@ -10,8 +10,8 @@ library mylib;
 use mylib.defRayrawAdcROV1.all;
 use mylib.defYaenamiAdc.all;
 use mylib.defAdcBlock.all;
-use mylib.defTdcBlock.all;
 use mylib.defEVB.all;
+use mylib.defBCT.all;
 
 entity AdcBlock is
   generic(
@@ -26,8 +26,6 @@ entity AdcBlock is
 
     -- control registers --
     busyAdc     : out std_logic;
-    --enBlock     : in std_logic;
-    regIn       : in regTdc;  -- use regTdc for now to fetch window_size etc
 
     -- data input --
     ADC_DATA_P   : in std_logic_vector(kNumAdcInputBlock-1 downto 0);
@@ -45,7 +43,15 @@ entity AdcBlock is
     rvBuilderBus        : out std_logic;
     dReadyBuilderBus    : out std_logic;
     bindBuilderBus      : in  std_logic;
-    isBoundToBuilder    : out std_logic
+    isBoundToBuilder    : out std_logic;
+
+    -- Local bus --
+    addrLocalBus        : in LocalAddressType;
+    dataLocalBusIn      : in LocalBusInType;
+    dataLocalBusOut     : out LocalBusOutType;
+    reLocalBus          : in std_logic;
+    weLocalBus          : in std_logic;
+    readyLocalBus       : out std_logic
 
     );
 end AdcBlock;
@@ -55,8 +61,6 @@ architecture RTL of AdcBlock is
   --attribute keep          : string;
 
   -- internal signals -------------------------------------------------------
-  --signal enable_block : std_logic;
-  signal reg_local    : regTdc; -- use regTdc for now to get window_size etc
   signal busy_adc     : std_logic;
 
   -- builder bus control --
@@ -67,6 +71,10 @@ architecture RTL of AdcBlock is
   signal dout_bbus                            : BBusDataType;
   signal re_bbus, rv_bbus                     : std_logic;
   signal bind_bbus, is_bound_to_builder       : std_logic;
+
+  -- Local bus controll -----------------------------------------------------
+  signal state_lbus	  : BusProcessType;
+  signal reg_adc      : regAdc;
 
   -- ADC ----------------------------------------------------------------------------------
   signal adc_block_reset  : std_logic_vector(0 downto 0);
@@ -259,7 +267,7 @@ begin
   -- ========================================================================
   -- body
   -- ========================================================================
-  offset_ch   <= std_logic_vector(to_unsigned(initCh, 5)); -- TODO: redefine kWidthChannel for ADC
+  offset_ch   <= std_logic_vector(to_unsigned(initCh, 5)); -- TODO: redefine kWidthAdcChannel for ADC
 
   -- signal connection ------------------------------------------------------
   busyAdc         <= busy_adc;
@@ -291,9 +299,6 @@ begin
       cstop_issued    <= '0';
     elsif(clkSys'event AND clkSys = '1') then
       cstop_issued    <= cStop;
-
-      --enable_block    <= enBlock;
-      reg_local       <= regIn;
     end if;
   end process;
 
@@ -519,16 +524,16 @@ begin
 
             re_ringbuf      <= '1';
             data_bit        <= isData;
-            read_ptr        <= std_logic_vector(unsigned(write_ptr) + unsigned(reg_local.offset_ptr));
+            read_ptr        <= std_logic_vector(unsigned(write_ptr) + unsigned(reg_adc.offset_ptr));
 
-            coarse_counter  <= reg_local.window_max;
+            coarse_counter  <= reg_adc.window_max;
             state_search    <= ReadRingBuffer;
           end if;
 
         when ReadRingBuffer =>
           read_ptr              <= std_logic_vector(unsigned(read_ptr) +1);
           coarse_counter        <= std_logic_vector(unsigned(coarse_counter) -1);
-          if(coarse_counter = reg_local.window_min) then
+          if(coarse_counter = reg_adc.window_min) then
             re_ringbuf          <= '0';
             rv_ringbuf          <= '0';
             data_bit            <= isSeparator;
@@ -716,5 +721,107 @@ begin
       end case;
     end if;
   end process;
+
+  -- Local bus process -----------------------------------------------------
+  u_BusProcess : process(clkSys, rst)
+  begin
+    if(rst = '1') then
+      dataLocalBusOut     <= x"00";
+      readyLocalBus       <= '0';
+      reg_adc.offset_ptr  <= (others => '0');
+      reg_adc.window_max  <= (others => '0');
+      reg_adc.window_min  <= (others => '0');
+      state_lbus    <= Init;
+    elsif(clkSys'event and clkSys = '1') then
+      case state_lbus is
+        when Init =>
+          state_lbus          <= Idle;
+
+        when Idle =>
+          readyLocalBus    <= '0';
+          if(weLocalBus = '1' or reLocalBus = '1') then
+            state_lbus    <= Connect;
+          end if;
+
+        when Connect =>
+          if(weLocalBus = '1') then
+            state_lbus    <= Write;
+          else
+            state_lbus    <= Read;
+          end if;
+
+        when Write =>
+          case addrLocalBus(kNonMultiByte'range) is
+            when kOfsPtr(kNonMultiByte'range) =>
+              if(addrLocalBus(kMultiByte'range) = k1stbyte) then
+                reg_adc.offset_ptr(7 downto 0)  <= dataLocalBusIn;
+              elsif(addrLocalBus(kMultiByte'range) = k2ndbyte) then
+                reg_adc.offset_ptr(kWidthCoarseCount-1 downto 8)  <= dataLocalBusIn(kWidthCoarseCount-1-8 downto 0);
+              else
+              end if;
+
+            when kWinMax(kNonMultiByte'range) =>
+              if(addrLocalBus(kMultiByte'range) = k1stbyte) then
+                reg_adc.window_max(7 downto 0)  <= dataLocalBusIn;
+              elsif(addrLocalBus(kMultiByte'range) = k2ndbyte) then
+                reg_adc.window_max(kWidthCoarseCount-1 downto 8)  <= dataLocalBusIn(kWidthCoarseCount-1-8 downto 0);
+              else
+              end if;
+
+            when kWinMin(kNonMultiByte'range) =>
+              if(addrLocalBus(kMultiByte'range) = k1stbyte) then
+                reg_adc.window_min(7 downto 0)  <= dataLocalBusIn;
+              elsif(addrLocalBus(kMultiByte'range) = k2ndbyte) then
+                reg_adc.window_min(kWidthCoarseCount-1 downto 8)  <= dataLocalBusIn(kWidthCoarseCount-1-8 downto 0);
+              else
+              end if;
+
+            when others => null;
+          end case;
+          state_lbus    <= Done;
+
+        when Read =>
+          case addrLocalBus(kNonMultiByte'range) is
+            when kOfsPtr(kNonMultiByte'range) =>
+              if(addrLocalBus(kMultiByte'range) = k1stbyte) then
+                dataLocalBusOut <= reg_adc.offset_ptr(7 downto 0);
+              elsif(addrLocalBus(kMultiByte'range) = k2ndbyte) then
+                dataLocalBusOut <= "00000" & reg_adc.offset_ptr(kWidthCoarseCount-1 downto 8);
+              else
+              end if;
+
+            when kWinMax(kNonMultiByte'range) =>
+              if(addrLocalBus(kMultiByte'range) = k1stbyte) then
+                dataLocalBusOut <= reg_adc.window_max(7 downto 0);
+              elsif(addrLocalBus(kMultiByte'range) = k2ndbyte) then
+                dataLocalBusOut <= "00000" & reg_adc.window_max(kWidthCoarseCount-1 downto 8);
+              else
+              end if;
+
+            when kWinMin(kNonMultiByte'range) =>
+              if(addrLocalBus(kMultiByte'range) = k1stbyte) then
+                dataLocalBusOut <= reg_adc.window_min(7 downto 0);
+              elsif(addrLocalBus(kMultiByte'range) = k2ndbyte) then
+                dataLocalBusOut <= "00000" & reg_adc.window_min(kWidthCoarseCount-1 downto 8);
+              else
+              end if;
+
+            when others =>
+              dataLocalBusOut <= x"ff";
+          end case;
+          state_lbus    <= Done;
+
+        when Done =>
+          readyLocalBus    <= '1';
+          if(weLocalBus = '0' and reLocalBus = '0') then
+            state_lbus    <= Idle;
+          end if;
+
+        -- probably this is error --
+        when others =>
+          state_lbus    <= Init;
+      end case;
+    end if;
+  end process u_BusProcess;
 
 end RTL;

@@ -207,7 +207,6 @@ architecture Behavioral of toplevel is
   signal data_tdc_bbus  : BBusDataTDC;
 
   -- ADC ---------------------------------------------------------------------
-  signal reg_from_tdc     : regTdc;
   signal adc_busy         : std_logic;
   signal data_adc_bbus    : BBusDataType;
   signal gclk_adc         : std_logic_vector(kNumASIC-1 downto 0);
@@ -569,7 +568,6 @@ begin
 
       -- Module output --
       busyTdc     => tdc_busy,
-      regOut      => reg_from_tdc,
       cStop       => c_stop,
 
       -- Builder bus --
@@ -601,7 +599,6 @@ begin
       clkAdc        => open, -- gclk_adc
 
       -- Module input --
-      regIn         => reg_from_tdc, -- TODO
       ADC_DATA_P    => ADC_DATA_P,
       ADC_DATA_N    => ADC_DATA_N,
       ADC_DFRAME_P  => ADC_DFRAME_P,
@@ -620,7 +617,15 @@ begin
       rvBuilderBus        => rv_bbus(kBbADC.ID),
       dReadyBuilderBus    => dready_bbus(kBbADC.ID),
       bindBuilderBus      => bind_bbus(kBbADC.ID),
-      isBoundToBuilder    => isbound_to_builder(kBbADC.ID)
+      isBoundToBuilder    => isbound_to_builder(kBbADC.ID),
+
+      -- Local bus --
+      addrLocalBus        => addr_LocalBus,
+      dataLocalBusIn      => data_LocalBusIn,
+      dataLocalBusOut     => data_LocalBusOut(kADC.ID),
+      reLocalBus          => re_LocalBus(kADC.ID),
+      weLocalBus          => we_LocalBus(kADC.ID),
+      readyLocalBus       => ready_LocalBus(kADC.ID)
       );
 
   -- IOM -------------------------------------------------------------------------------
