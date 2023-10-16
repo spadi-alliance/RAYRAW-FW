@@ -73,17 +73,20 @@ architecture RTL of AdcBlock is
   signal bind_bbus, is_bound_to_builder       : std_logic;
 
   -- Local bus controll -----------------------------------------------------
-  signal state_lbus	  : BusProcessType;
-  signal reg_adc      : regAdc;
+  signal state_lbus	      : BusProcessType;
+  signal reg_adc          : regAdc;
+  signal reg_adc_ro_reset : std_logic;
 
   -- ADC ----------------------------------------------------------------------------------
-  signal adc_block_reset  : std_logic_vector(0 downto 0);
-  signal tap_value_in     : std_logic_vector(kNumTapBit-1 downto 0);
+  signal adc_ro_reset       : std_logic;
+  signal adc_ro_reset_vio   : std_logic_vector(0 downto 0);
+  signal tap_value_in       : std_logic_vector(kNumTapBit-1 downto 0);
   signal tap_value_frame_in     : std_logic_vector(kNumTapBit-1 downto 0);
-  signal en_bitslip       : std_logic_vector(0 downto 0);
+  signal en_ext_tapin       : std_logic_vector(0 downto 0);
+  signal adcro_is_ready     : std_logic_vector(kNumAsicBlock-1 downto 0);
   -- signal clk_adc          : std_logic_vector(kNumASIC-1 downto 0);
   -- signal gclk_adc         : std_logic_vector(kNumASIC-1 downto 0);
-  signal adc_data         : AdcDataBlockArray; -- 32 * 10
+  signal adc_data           : AdcDataBlockArray; -- 32 * 10
 
   COMPONENT vio_adc
   PORT (
@@ -271,8 +274,8 @@ begin
 
   -- signal connection ------------------------------------------------------
   busyAdc         <= busy_adc;
-  busy_adc        <= full_flag OR pgfull_flag OR busy_fifo OR full_block OR afull_block OR busy_process; 
-  
+  busy_adc        <= full_flag OR pgfull_flag OR busy_fifo OR full_block OR afull_block OR busy_process;
+
   -- builder bus --
   -- At present, just rename
   addr_bbus       <= addrBuilderBus;
@@ -305,13 +308,13 @@ begin
   u_VIO : vio_adc
     PORT MAP (
       clk => clkSys,
-      probe_out0 => adc_block_reset,
+      probe_out0 => adc_ro_reset_vio,
       probe_out1 => tap_value_in,
       probe_out2 => tap_value_frame_in,
-      probe_out3 => en_bitslip
+      probe_out3 => en_ext_tapin
     );
 
-
+  adc_ro_reset  <= reg_adc_ro_reset or adc_ro_reset_vio(0);
   u_ADC : entity mylib.RawrayAdcRO
     generic map
     (
@@ -320,17 +323,17 @@ begin
     port map
     (
       -- SYSTEM port --
-      rst           => adc_block_reset(0),
+      rst           => adc_ro_reset,
       clkSys        => clkSys,
       clkIdelayRef  => clkIdelayRef,
       tapValueIn    => tap_value_in,
       tapValueFrameIn    => tap_value_frame_in,
-      enExtTapIn    => '1',
-      enBitslip     => en_bitslip(0),
+      enExtTapIn    => en_ext_tapin(0),
+      enBitslip     => '1',
       frameRefPatt  => "1100000000",
 
       -- Status --
-      isReady       => open,
+      isReady       => adcro_is_ready,
       bitslipErr    => open,
       clkAdc        => open, -- clk_adc (later gclk_adc)
 
@@ -371,7 +374,7 @@ begin
       addra   => write_ptr, -- TODO
       dina    => rb_in,  -- TODO: define
       clkb    => clkSys,
-      rstb    => rst, 
+      rstb    => rst,
       enb     => re_ringbuf, -- TODO
       addrb   => read_ptr, -- TODO
       doutb   => rb_out  -- TODO
@@ -572,7 +575,7 @@ begin
     end if;
   end process u_SearchProcess;
 
-  
+
   -- Build one event in this block ------------------------------------------
   u_BuildProcess : process(rst, clkSys)
     variable id : integer;
@@ -731,6 +734,7 @@ begin
       reg_adc.offset_ptr  <= (others => '0');
       reg_adc.window_max  <= (others => '0');
       reg_adc.window_min  <= (others => '0');
+      reg_adc_ro_reset    <= '1';
       state_lbus    <= Init;
     elsif(clkSys'event and clkSys = '1') then
       case state_lbus is
@@ -776,6 +780,9 @@ begin
               else
               end if;
 
+            when kAdcRoReset(kNonMultiByte'range) =>
+              reg_adc_ro_reset  <= dataLocalBusIn(0);
+
             when others => null;
           end case;
           state_lbus    <= Done;
@@ -805,6 +812,12 @@ begin
                 dataLocalBusOut <= "00000" & reg_adc.window_min(kWidthCoarseCount-1 downto 8);
               else
               end if;
+
+            when kAdcRoReset(kNonMultiByte'range) =>
+              dataLocalBusOut <= "0000000" & reg_adc_ro_reset;
+
+            when kIsReady(kNonMultiByte'range) =>
+              dataLocalBusOut <= "0000" & adcro_is_ready;
 
             when others =>
               dataLocalBusOut <= x"ff";
