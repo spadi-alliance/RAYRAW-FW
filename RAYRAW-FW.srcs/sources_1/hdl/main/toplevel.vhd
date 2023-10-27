@@ -463,7 +463,7 @@ begin
   dip_sw(7)   <= DIP(7);
 
   NIM_OUT(1)  <= clk_sys;
-  NIM_OUT(2)  <= '0';
+  NIM_OUT(2)  <= module_busy;
 --  NIM_OUT(2)  <= gclk_adc(0) when (DIP(7 downto 6) = "00") else
 --                 gclk_adc(1) when (DIP(7 downto 6) = "01") else
 --                 gclk_adc(2) when (DIP(7 downto 6) = "10") else
@@ -549,8 +549,9 @@ begin
       );
 
   -- TDC -------------------------------------------------------------------------------
-  sig_in_tdc(0)(0)             <= NIM_IN(2);
-  sig_in_tdc(0)(31 downto 1)   <= ASIC_DISCRI(31 downto 1);
+  --sig_in_tdc(0)(0)             <= NIM_IN(2);
+  --sig_in_tdc(0)(31 downto 1)   <= ASIC_DISCRI(31 downto 1);
+  sig_in_tdc(0)   <= ASIC_DISCRI;
 
   data_bbus(kBbTDCL0.ID) <= data_tdc_bbus(0);
   data_bbus(kBbTDCT0.ID) <= data_tdc_bbus(1);
@@ -878,8 +879,8 @@ begin
         CLK               => clk_link, --: System Clock >129MHz
         RST               => sitcp_reset, --: System reset
         -- Configuration parameters
-        --FORCE_DEFAULTn    => dip_sw(kSiTCP.Index), --: Load default parameters
-        FORCE_DEFAULTn    => '0', --: Load default parameters
+        FORCE_DEFAULTn    => dip_sw(kSiTCP.Index), --: Load default parameters
+        --FORCE_DEFAULTn    => '0', --: Load default parameters
         EXT_IP_ADDR       => X"00000000", --: IP address[31:0]
         EXT_TCP_PORT      => X"0000", --: TCP port #[15:0]
         EXT_RBCP_PORT     => X"0000", --: RBCP port #[15:0]
