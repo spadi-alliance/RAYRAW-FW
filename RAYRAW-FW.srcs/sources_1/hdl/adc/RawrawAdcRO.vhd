@@ -132,7 +132,7 @@ begin
     tap_value_in(i)(8)      <= tapValueFrameIn;
 
     gen_ch : for j in 0 to kNumAdcCh-1 generate
-      adc_data_block_out(kNumAdcCh*i +j)   <= dout_fifo(i)(kNumAdcBit*(i+1)-1 downto kNumAdcBit*i);
+      adc_data_block_out(kNumAdcCh*i +j)   <= dout_fifo(i)(kNumAdcBit*(j+1)-1 downto kNumAdcBit*j);
       tap_value_in(i)(j)                   <= tapValueIn;
     end generate;
 

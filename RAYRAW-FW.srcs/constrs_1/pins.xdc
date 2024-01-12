@@ -4,6 +4,7 @@
 
 # System ---------------------------------------------------------------
 set_property PACKAGE_PIN A24 [get_ports PROGB_ON]
+#set_property LOC D23 [get_cells u_ClkSys_Inst/inst/clkin1_ibufgds]
 set_property PACKAGE_PIN D23 [get_ports BASE_CLKP]
 set_property PACKAGE_PIN D24 [get_ports BASE_CLKN]
 set_property PACKAGE_PIN A20 [get_ports USR_RSTB]
@@ -349,5 +350,6 @@ set_property DIFF_TERM true [get_ports {ADC_DCLK_P[*]}]
 
 # MEZZANINE ------------------------------------------------------------
 #set_property IOSTANDARD LVDS [get_ports MZN_P[*]]
+
 
 
