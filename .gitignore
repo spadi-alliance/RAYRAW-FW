@@ -92,8 +92,8 @@
 *.ip_user_files/
 *.sim/
 *.runs/
-*.bit/
-*.mcs/
+!*.bit
+!*.mcs
 #########
 # Ignore IP files
 #########
